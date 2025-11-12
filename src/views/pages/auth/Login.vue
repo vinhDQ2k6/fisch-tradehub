@@ -1,15 +1,77 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
+import { yupResolver } from '@primevue/forms/resolvers/yup';
 import { IconField } from 'primevue';
+import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
+import * as yup from 'yup';
 
-const username = ref('');
-const password = ref('');
+const toast = useToast();
+const initialValues = ref({
+    username: '',
+    password: ''
+});
+const resolver = ref(
+    yupResolver(
+        yup.object({
+            username: yup.string().required('Username is required'),
+            password: yup.string().required('Password is required')
+        })
+    )
+);
 const checked = ref(false);
+
+const onFormSubmit = async (e) => {
+    if (!e.valid) {
+        toast.add({ severity: 'warn', summary: 'Validation error', detail: 'Please fill in all required fields.', life: 3500 });
+        return;
+    }
+
+    const url = 'https://dummyjson.com/auth/login';
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(e.values)
+        });
+
+        // Use a switch on status to reduce nested conditionals and return early for each case
+        switch (res.status) {
+            case 200:
+            case 201: {
+                const data = await res.json();
+                if (data?.accessToken) {
+                    toast.add({ severity: 'success', summary: 'Login successful', detail: 'Welcome back!', life: 3000 });
+
+                    return;
+                }
+
+                toast.add({ severity: 'error', summary: 'Login failed', detail: data?.message || 'Invalid credentials.', life: 4500 });
+                return;
+            }
+            case 401:
+                toast.add({ severity: 'error', summary: 'Login failed', detail: 'Invalid username or password.', life: 4500 });
+                return;
+            case 429:
+                toast.add({ severity: 'error', summary: 'Too many attempts', detail: 'Please wait and try again later.', life: 4500 });
+                return;
+            case 423:
+                toast.add({ severity: 'error', summary: 'Account locked', detail: 'Your account is locked. Contact support.', life: 4500 });
+                return;
+            default:
+                toast.add({ severity: 'error', summary: 'Login failed', detail: `Server returned status ${res.status}.`, life: 4500 });
+                return;
+        }
+    } catch (err) {
+        toast.add({ severity: 'error', summary: 'Network error', detail: err?.message || 'Network error. Please check your connection.', life: 4500 });
+        console.error('Login error', err);
+    }
+};
 </script>
 
 <template>
     <FloatingConfigurator />
+    <Toast></Toast>
     <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
         <div class="flex flex-col items-center justify-center">
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
@@ -36,7 +98,7 @@ const checked = ref(false);
                         <span class="text-muted-color font-medium">Sign in to continue</span>
                     </div>
 
-                    <Form class="grid grid-cols-1 gap-4">
+                    <Form :initialValues :resolver @submit="onFormSubmit" class="grid grid-cols-1 gap-4">
                         <FormField v-slot="$field" name="username" initialValue="" class="flex flex-col gap-1" fluid>
                             <label for="username" class="block text-surface-900 dark:text-surface-0 text-xl font-medium">Username</label>
                             <IconField>
