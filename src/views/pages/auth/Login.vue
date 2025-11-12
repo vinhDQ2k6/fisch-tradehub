@@ -1,15 +1,16 @@
 <script setup>
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
+import { IconField } from 'primevue';
 import { ref } from 'vue';
 
-const email = ref('');
+const username = ref('');
 const password = ref('');
 const checked = ref(false);
 </script>
 
 <template>
     <FloatingConfigurator />
-    <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
+    <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
         <div class="flex flex-col items-center justify-center">
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
                 <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
@@ -35,22 +36,35 @@ const checked = ref(false);
                         <span class="text-muted-color font-medium">Sign in to continue</span>
                     </div>
 
-                    <div>
-                        <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                        <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-[30rem] mb-8" v-model="email" />
+                    <Form class="grid grid-cols-1 gap-4">
+                        <FormField v-slot="$field" name="username" initialValue="" class="flex flex-col gap-1" fluid>
+                            <label for="username" class="block text-surface-900 dark:text-surface-0 text-xl font-medium">Username</label>
+                            <IconField>
+                                <InputIcon class="pi pi-user" />
+                                <InputText id="username" type="text" placeholder="Username" v-model="username" fluid />
+                            </IconField>
+                            <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                        </FormField>
 
-                        <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                        <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" class="mb-4" fluid :feedback="false"></Password>
+                        <FormField v-slot="$field" name="password" initialValue="" class="flex flex-col gap-1" fluid>
+                            <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium text-xl">Password</label>
+                            <IconField>
+                                <InputIcon class="pi pi-lock" />
+                                <Password id="password" toggleMask placeholder="Password" v-model="password" :feedback="false" fluid></Password>
+                            </IconField>
+                            <Message v-if="$field?.invalid" severity="error" size="small" variant="simple">{{ $field.error?.message }}</Message>
+                        </FormField>
 
-                        <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                        <div class="flex items-center justify-between gap-8">
                             <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
+                                <Checkbox v-model="checked" id="rememberme" binary class="mr-2"></Checkbox>
+                                <label for="rememberme">Remember me</label>
                             </div>
                             <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                         </div>
-                        <Button label="Sign In" class="w-full" as="router-link" to="/"></Button>
-                    </div>
+
+                        <Button type="submit" label="Submit" fluid></Button>
+                    </Form>
                 </div>
             </div>
         </div>
