@@ -149,7 +149,7 @@ const onFormSubmit = async (e) => {
                     <div class="text-center mb-8">
                         <RouterLink to="/" class="block w-fit mx-auto">
                             <img
-                                src="https://static.wikitide.net/fischwiki/8/8c/FischWikiFavicon192x192.png"
+                                src="https://static.wikitide.net/fischwiki/thumb/b/bf/WikiIcon16.png/450px-WikiIcon16.png"
                                 alt="Fisch-TradeHub Logo"
                                 class="mb-8 w-16 shrink-0"
                             />
