@@ -1,10 +1,11 @@
 <template>
     <div
         id="hero"
-        class="relative flex flex-col pt-6 px-6 lg:px-20 overflow-hidden text-white"
+        class="relative flex flex-col pt-12 px-6 lg:px-20 overflow-hidden text-white"
         style="
             /* layered colors + soft caustics + faint ripples */
-            background-image: radial-gradient(
+            background-image:
+                radial-gradient(
                     1200px 600px at 20% 10%,
                     rgba(150, 210, 255, 0.95) 0%,
                     rgba(80, 170, 235, 0.8) 25%,
@@ -46,7 +47,7 @@
         "
     >
         <div class="mx-6 md:mx-20 mt-0 md:mt-6">
-            <h1 class="text-6xl font-bold text-gray-900 leading-tight">
+            <h1 class="text-9xl font-bold text-gray-900 leading-tight">
                 <span class="font-light block">Welcome to</span>Fisch-TradeHub
             </h1>
             <div class="flex gap-4 w-fit">

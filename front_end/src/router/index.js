@@ -1,4 +1,5 @@
-import AppLayout from "@/layout/AppLayout.vue";
+import AppLayoutPrivate from "@/layout/AppLayoutPrivate.vue";
+import AppLayoutPublic from "@/layout/AppLayoutPublic.vue";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -6,29 +7,25 @@ const router = createRouter({
     routes: [
         {
             path: "/dashboard",
-            component: AppLayout,
+            component: AppLayoutPrivate,
             children: [
                 {
                     path: "/dashboard",
                     name: "dashboard",
                     component: () => import("@/views/Dashboard.vue"),
                 },
-                {
-                    path: "/pages/empty",
-                    name: "empty",
-                    component: () => import("@/views/pages/Empty.vue"),
-                },
-                {
-                    path: "/pages/crud",
-                    name: "crud",
-                    component: () => import("@/views/pages/Crud.vue"),
-                },
             ],
         },
         {
             path: "/",
-            name: "landing",
-            component: () => import("@/views/pages/Landing.vue"),
+            component: AppLayoutPublic,
+            children: [
+                {
+                    path: "/",
+                    name: "landing",
+                    component: () => import("@/views/pages/Landing.vue"),
+                },
+            ],
         },
         {
             path: "/pages/notfound",

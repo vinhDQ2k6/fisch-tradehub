@@ -2,8 +2,8 @@
 import { useLayout } from "@/layout/composables/layout";
 import { computed, ref, watch } from "vue";
 import AppFooter from "./AppFooter.vue";
-import AppSidebar from "./AppSidebar.vue";
-import AppTopbar from "./AppTopbar.vue";
+import AppSidebar from "./AppSidebarPrivate.vue";
+import AppTopbar from "./AppTopbarPrivate.vue";
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 

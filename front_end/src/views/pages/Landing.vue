@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import FooterWidget from "@/components/landing/FooterWidget.vue";
-import HeroWidget from "@/components/landing/HeroWidget.vue";
-import TopbarWidget from "@/components/landing/TopbarWidget.vue";
 </script>
 
 <template>
@@ -10,7 +8,7 @@ import TopbarWidget from "@/components/landing/TopbarWidget.vue";
             <div
                 class="py-6 px-6 mx-0 md:mx-12 lg:mx-20 lg:px-20 flex items-center justify-between relative lg:static"
             >
-                <TopbarWidget />
+                <!-- <TopbarWidget /> -->
             </div>
             <HeroWidget />
             <!-- <FeaturesWidget />
