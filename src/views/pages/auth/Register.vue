@@ -46,19 +46,21 @@ const onFormSubmit = async (e) => {
         return;
     }
 
-    const url = "https://dummyjson.com/users/add";
+    const url = "";
+    const payload = new URLSearchParams({
+        username: e.values.username,
+        email: e.values.email,
+        password: e.values.password,
+        "remember-me": String(Boolean(e.values.rememberme)),
+    }).toString();
+
     try {
         const res = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                username: e.values.username,
-                email: e.values.email,
-                password: e.values.password,
-            }),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: payload,
+            credentials: "include",
         });
-
-        console.log(res);
 
         if (!res) {
             toast.add({
@@ -315,7 +317,12 @@ const onFormSubmit = async (e) => {
                             </div>
                         </div>
 
-                        <Button type="submit" label="Register" fluid></Button>
+                        <Button
+                            type="submit"
+                            icon="pi pi-user-plus"
+                            label="Register"
+                            fluid
+                        ></Button>
                     </Form>
                 </div>
             </div>

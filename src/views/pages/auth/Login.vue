@@ -253,8 +253,35 @@ const onFormSubmit = async (e) => {
                             >
                         </div>
 
-                        <Button type="submit" label="Submit" fluid></Button>
+                        <Button
+                            type="submit"
+                            icon="pi pi-sign-in"
+                            label="Login"
+                            fluid
+                        ></Button>
                     </Form>
+
+                    <Divider align="center" type="solid">
+                        <b>Or</b>
+                    </Divider>
+
+                    <div class="flex gap-4">
+                        <Button
+                            icon="pi pi-google"
+                            severity="danger"
+                            class="p-button-outlined p-button-google flex-1 w-full"
+                        ></Button>
+                        <Button
+                            icon="pi pi-facebook"
+                            severity="info"
+                            class="p-button-outlined p-button-facebook flex-1 w-full"
+                        ></Button>
+                        <Button
+                            icon="pi pi-github"
+                            severity="contrast"
+                            class="p-button-outlined p-button-github flex-1 w-full"
+                        ></Button>
+                    </div>
                 </div>
             </div>
         </div>
