@@ -59,9 +59,10 @@ api-generator/typedoc.json
 *.key
 
 # Lock files (optional: commit one or the other)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+front_end/package-lock.json
 
 .editorconfig
 
@@ -95,4 +96,3 @@ nbdist/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-front_end/package-lock.json
