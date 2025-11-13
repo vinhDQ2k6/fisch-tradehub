@@ -64,3 +64,34 @@ api-generator/typedoc.json
 # pnpm-lock.yaml
 
 .editorconfig
+
+### Java / Maven backend artifacts
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Spring Tool Suite workspace files
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA project files
+*.iws
+*.iml
+*.ipr
+
+### NetBeans project files
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
