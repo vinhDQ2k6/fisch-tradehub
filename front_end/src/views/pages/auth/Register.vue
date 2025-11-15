@@ -1,20 +1,25 @@
 <script setup>
+import { register } from "@/auth/authService";
+import { showError, showSuccess } from "@/auth/handleError";
+import { useAuth } from "@/auth/useAuth";
 import FloatingConfigurator from "@/components/FloatingConfigurator.vue";
 import { yupResolver } from "@primevue/forms/resolvers/yup";
 import { IconField } from "primevue";
 import { useToast } from "primevue/usetoast";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import * as yup from "yup";
 
+const { doLogin } = useAuth();
 const toast = useToast();
+
 const initialValues = ref({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    rememberme: false,
+    rememberMe: false,
 });
-
 const resolver = ref(
     yupResolver(
         yup.object({
@@ -46,79 +51,28 @@ const onFormSubmit = async (e) => {
         return;
     }
 
-    const url = "";
-    const payload = new URLSearchParams({
-        username: e.values.username,
-        email: e.values.email,
-        password: e.values.password,
-        "remember-me": String(Boolean(e.values.rememberme)),
-    }).toString();
-
     try {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: payload,
-            credentials: "include",
+        await register({
+            username: e.values.username,
+            email: e.values.email,
+            password: e.values.password,
         });
 
-        if (!res) {
-            toast.add({
-                severity: "error",
-                summary: "Registration failed",
-                detail: "No response from server.",
-                life: 4500,
+        showSuccess("Your account has been created.", {
+            summary: "Registration successful",
+        });
+        if (e.values.rememberMe) {
+            await doLogin({
+                username: e.values.username,
+                password: e.values.password,
+                rememberMe: Boolean(e.values.rememberMe),
             });
-            return;
-        }
-
-        switch (res.status) {
-            case 200:
-            case 201: {
-                const data = await res.json();
-                toast.add({
-                    severity: "success",
-                    summary: "Registration successful",
-                    detail: "Your account has been created.",
-                    life: 3500,
-                });
-                console.log("register success", data);
-                // TODO: redirect to login or auto-login
-                return;
-            }
-            case 409:
-                toast.add({
-                    severity: "error",
-                    summary: "Registration failed",
-                    detail: "User already exists.",
-                    life: 4500,
-                });
-                return;
-            case 429:
-                toast.add({
-                    severity: "error",
-                    summary: "Too many requests",
-                    detail: "Please wait and try again later.",
-                    life: 4500,
-                });
-                return;
-            default:
-                toast.add({
-                    severity: "error",
-                    summary: "Registration failed",
-                    detail: `Server returned status ${res.status}.`,
-                    life: 4500,
-                });
-                return;
+            useRouter().push({ path: "/" });
+        } else {
+            useRouter().push({ path: "/auth/login" });
         }
     } catch (err) {
-        toast.add({
-            severity: "error",
-            summary: "Network error",
-            detail:
-                err?.message || "Network error. Please check your connection.",
-            life: 4500,
-        });
+        showError(err, { summary: "Registration failed" });
         console.error("Register error", err);
     }
 };
@@ -126,7 +80,6 @@ const onFormSubmit = async (e) => {
 
 <template>
     <FloatingConfigurator />
-    <Toast></Toast>
     <div
         class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden"
     >
@@ -304,13 +257,13 @@ const onFormSubmit = async (e) => {
                         <div class="flex items-center justify-between gap-8">
                             <div class="flex items-center">
                                 <Checkbox
-                                    name="rememberme"
-                                    v-model="rememberme"
-                                    id="rememberme"
+                                    name="rememberMe"
+                                    v-model="rememberMe"
+                                    id="rememberMe"
                                     binary
                                     class="mr-2"
                                 ></Checkbox>
-                                <label for="rememberme"
+                                <label for="rememberMe"
                                     >Remember me after I created my
                                     account.</label
                                 >

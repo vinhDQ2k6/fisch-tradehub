@@ -1,17 +1,18 @@
 <script setup>
+import { showError, showSuccess } from "@/auth/handleError";
+import { useAuth } from "@/auth/useAuth";
 import FloatingConfigurator from "@/components/FloatingConfigurator.vue";
 import { yupResolver } from "@primevue/forms/resolvers/yup";
 import { IconField } from "primevue";
 import { useToast } from "primevue/usetoast";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import * as yup from "yup";
 
+const { doLogin } = useAuth();
 const toast = useToast();
-const initialValues = ref({
-    username: "",
-    password: "",
-    rememberme: false,
-});
+
+const initialValues = ref({ username: "", password: "", rememberMe: false });
 const resolver = ref(
     yupResolver(
         yup.object({
@@ -32,90 +33,19 @@ const onFormSubmit = async (e) => {
         return;
     }
 
-    const url = "";
-    const payload = new URLSearchParams({
-        username: e.values.username,
-        password: e.values.password,
-        "remember-me": String(Boolean(e.values.rememberme)),
-    }).toString();
-
     try {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: payload,
-            credentials: "include",
+        await doLogin({
+            username: e.values.username,
+            password: e.values.password,
+            rememberMe: Boolean(e.values.rememberMe),
         });
 
-        switch (res.status) {
-            case 200:
-            case 201: {
-                const data = await res.json();
-
-                if (data?.accessToken) {
-                    toast.add({
-                        severity: "success",
-                        summary: "Login successful",
-                        detail: `Welcome back!, ${data.username}`,
-                        life: 3000,
-                    });
-                    console.log("Login successful:", data);
-
-                    return;
-                }
-
-                toast.add({
-                    severity: "error",
-                    summary: "Login failed",
-                    detail:
-                        data?.message ||
-                        `Invalid credentials, ${data.username}`,
-                    life: 4500,
-                });
-                return;
-            }
-            case 400:
-            case 401:
-                toast.add({
-                    severity: "error",
-                    summary: "Login failed",
-                    detail: "Invalid username or password.",
-                    life: 4500,
-                });
-                return;
-            case 429:
-                toast.add({
-                    severity: "error",
-                    summary: "Too many attempts",
-                    detail: "Please wait and try again later.",
-                    life: 4500,
-                });
-                return;
-            case 423:
-                toast.add({
-                    severity: "error",
-                    summary: "Account locked",
-                    detail: "Your account is locked. Contact support.",
-                    life: 4500,
-                });
-                return;
-            default:
-                toast.add({
-                    severity: "error",
-                    summary: "Login failed",
-                    detail: `Server returned status ${res.status}.`,
-                    life: 4500,
-                });
-                return;
-        }
+        showSuccess(`Welcome back!, ${e.values.username}`, {
+            summary: "Login successful",
+        });
+        useRouter().push({ path: "/" });
     } catch (err) {
-        toast.add({
-            severity: "error",
-            summary: "Network error",
-            detail:
-                err?.message || "Network error. Please check your connection.",
-            life: 4500,
-        });
+        showError(err, { summary: "Login failed" });
         console.error("Login error", err);
     }
 };
@@ -123,7 +53,6 @@ const onFormSubmit = async (e) => {
 
 <template>
     <FloatingConfigurator />
-    <Toast />
     <div
         class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden"
     >
@@ -238,13 +167,13 @@ const onFormSubmit = async (e) => {
                         <div class="flex items-center justify-between gap-8">
                             <div class="flex items-center">
                                 <Checkbox
-                                    name="rememberme"
-                                    v-model="rememberme"
-                                    id="rememberme"
+                                    name="rememberMe"
+                                    v-model="rememberMe"
+                                    id="rememberMe"
                                     binary
                                     class="mr-2"
                                 ></Checkbox>
-                                <label for="rememberme">Remember me</label>
+                                <label for="rememberMe">Remember me</label>
                             </div>
                             <RouterLink
                                 to="/auth/error"

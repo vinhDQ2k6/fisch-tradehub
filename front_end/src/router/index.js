@@ -1,3 +1,4 @@
+import { createAuthGuard } from "@/auth/routeGuard";
 import AppLayoutPrivate from "@/layout/AppLayoutPrivate.vue";
 import AppLayoutPublic from "@/layout/AppLayoutPublic.vue";
 import { createRouter, createWebHistory } from "vue-router";
@@ -13,6 +14,7 @@ const router = createRouter({
                     path: "/dashboard",
                     name: "dashboard",
                     component: () => import("@/views/Dashboard.vue"),
+                    meta: { requiresAuth: true, roles: ["ROLE_ADMIN"] },
                 },
             ],
         },
@@ -55,4 +57,5 @@ const router = createRouter({
     ],
 });
 
+createAuthGuard(router);
 export default router;

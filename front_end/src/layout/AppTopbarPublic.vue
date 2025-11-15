@@ -1,9 +1,12 @@
 <script setup>
+import { useAuth } from "@/auth/useAuth";
 import { useLayout } from "@/layout/composables/layout";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed } from "vue";
 import AppConfigurator from "./AppConfigurator.vue";
 
 const { toggleDarkMode, isDarkTheme } = useLayout();
+const { user, doLogout } = useAuth();
+const isLogged = computed(() => !!user.value);
 
 function smoothScroll(id) {
     document.body.click();
@@ -16,31 +19,28 @@ function smoothScroll(id) {
     }
 }
 
-// Simple auth detection: consider logged in if a common token is present in localStorage or cookies.
-const isLogged = ref(false);
+// const checkAuth = () => {
+//     try {
+//         isLogged.value = Boolean(
+//             localStorage.getItem("accessToken") ||
+//                 localStorage.getItem("token") ||
+//                 document.cookie.includes("JSESSIONID") ||
+//                 document.cookie.includes("XSRF-TOKEN"),
+//         );
+//     } catch (e) {
+//         isLogged.value = false;
+//     }
+// };
 
-const checkAuth = () => {
-    try {
-        isLogged.value = Boolean(
-            localStorage.getItem("accessToken") ||
-                localStorage.getItem("token") ||
-                document.cookie.includes("JSESSIONID") ||
-                document.cookie.includes("XSRF-TOKEN"),
-        );
-    } catch (e) {
-        isLogged.value = false;
-    }
-};
+// onMounted(() => {
+//     checkAuth();
+//     // update when other tabs change auth state
+//     window.addEventListener("storage", checkAuth);
+// });
 
-onMounted(() => {
-    checkAuth();
-    // update when other tabs change auth state
-    window.addEventListener("storage", checkAuth);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener("storage", checkAuth);
-});
+// onBeforeUnmount(() => {
+//     window.removeEventListener("storage", checkAuth);
+// });
 </script>
 
 <template>
@@ -99,26 +99,6 @@ onBeforeUnmount(() => {
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <div
-                        class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2"
-                    >
-                        <template v-if="!isLogged">
-                            <Button
-                                label="Login"
-                                text
-                                as="router-link"
-                                to="/auth/login"
-                                rounded
-                            ></Button>
-                            <Button
-                                label="Register"
-                                as="router-link"
-                                to="/auth/register"
-                                rounded
-                            ></Button>
-                        </template>
-                    </div>
-
                     <div class="layout-config-menu">
                         <button
                             type="button"
@@ -153,13 +133,68 @@ onBeforeUnmount(() => {
                             <AppConfigurator />
                         </div>
                     </div>
-                    <button
-                        v-if="isLogged"
-                        type="button"
-                        class="layout-topbar-action"
+
+                    <template
+                        v-if="!isLogged"
+                        class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2"
                     >
-                        <i class="pi pi-user"></i>
-                    </button>
+                        <Button
+                            label="Login"
+                            text
+                            as="router-link"
+                            to="/auth/login"
+                            rounded
+                        />
+                        <Button
+                            label="Register"
+                            as="router-link"
+                            to="/auth/register"
+                            rounded
+                        />
+                    </template>
+
+                    <div class="relative" v-else>
+                        <button
+                            type="button"
+                            v-styleclass="{
+                                selector: '@next',
+                                enterFromClass: 'hidden',
+                                enterActiveClass: 'animate-scalein',
+                                leaveToClass: 'hidden',
+                                leaveActiveClass: 'animate-fadeout',
+                                hideOnOutsideClick: true,
+                            }"
+                            class="layout-topbar-action"
+                        >
+                            <i class="pi pi-user"></i>
+                        </button>
+
+                        <div
+                            class="hidden absolute top-13 right-0 w-32 p-2 bg-surface-0 dark:bg-surface-900 border border-surface rounded-border origin-top shadow-[0px_3px_5px_rgba(0,0,0,0.02),0px_0px_2px_rgba(0,0,0,0.05),0px_1px_4px_rgba(0,0,0,0.08)] z-50"
+                        >
+                            <ul class="list-none m-0 p-2">
+                                <li>
+                                    <router-link
+                                        to="/profile"
+                                        class="flex items-center gap-2 p-2 text-surface-900 dark:text-surface-0 rounded hover:bg-surface-100 dark:hover:bg-surface-800"
+                                    >
+                                        <i class="pi pi-user"></i>
+                                        <span>Profile</span>
+                                    </router-link>
+                                </li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        @click="doLogout"
+                                        class="flex items-center gap-2 p-2 w-full text-left text-surface-900 dark:text-surface-0 rounded hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
+                                    >
+                                        <i class="pi pi-sign-out"></i>
+                                        <span>Log out</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
