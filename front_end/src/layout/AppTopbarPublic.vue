@@ -2,6 +2,7 @@
 import { useAuth } from "@/auth/useAuth";
 import { useLayout } from "@/layout/composables/layout";
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import AppConfigurator from "./AppConfigurator.vue";
 
 const { toggleDarkMode, isDarkTheme } = useLayout();
@@ -18,29 +19,6 @@ function smoothScroll(id) {
         });
     }
 }
-
-// const checkAuth = () => {
-//     try {
-//         isLogged.value = Boolean(
-//             localStorage.getItem("accessToken") ||
-//                 localStorage.getItem("token") ||
-//                 document.cookie.includes("JSESSIONID") ||
-//                 document.cookie.includes("XSRF-TOKEN"),
-//         );
-//     } catch (e) {
-//         isLogged.value = false;
-//     }
-// };
-
-// onMounted(() => {
-//     checkAuth();
-//     // update when other tabs change auth state
-//     window.addEventListener("storage", checkAuth);
-// });
-
-// onBeforeUnmount(() => {
-//     window.removeEventListener("storage", checkAuth);
-// });
 </script>
 
 <template>
@@ -185,7 +163,12 @@ function smoothScroll(id) {
                                 <li>
                                     <button
                                         type="button"
-                                        @click="doLogout"
+                                        @click="
+                                            async () => {
+                                                await doLogout();
+                                                useRouter().push('/');
+                                            }
+                                        "
                                         class="flex items-center gap-2 p-2 w-full text-left text-surface-900 dark:text-surface-0 rounded hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
                                     >
                                         <i class="pi pi-sign-out"></i>
