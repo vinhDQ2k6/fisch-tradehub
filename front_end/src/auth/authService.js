@@ -13,7 +13,7 @@ export async function login({ username, password, rememberMe }) {
         const p = path.startsWith("/") ? path : `/${path}`;
         return `${trimmedBase}${p}`;
     }
-    const url = buildApiUrl("/auth/login");
+    const url = buildApiUrl("/api/auth/login");
     const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -32,14 +32,14 @@ export async function login({ username, password, rememberMe }) {
 }
 
 export async function logout() {
-    return apiFetch("/auth/logout", { method: "POST" });
+    return apiFetch("/api/auth/logout", { method: "POST" });
 }
 
 export async function currentUser() {
-    return apiFetch("/auth/me", { method: "GET", csrf: false });
+    return apiFetch("/api/auth/me", { method: "GET", csrf: false });
 }
 
 export async function register(payload) {
     // payload: { username, email, password, ... }
-    return apiFetch("/auth/register", { method: "POST", body: payload });
+    return apiFetch("/api/auth/register", { method: "POST", body: payload });
 }
