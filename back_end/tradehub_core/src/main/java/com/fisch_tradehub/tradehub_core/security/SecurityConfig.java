@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,9 +17,11 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 public class SecurityConfig {
 
     private final CorsConfig corsConfig;
+    private final UserDetailsService userDetailsService;
 
-    SecurityConfig(CorsConfig corsConfig) {
+    SecurityConfig(CorsConfig corsConfig, UserDetailsService userDetailsService) {
         this.corsConfig = corsConfig;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -29,9 +32,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // REST API + SPA, tạm tắt CSRF (Có thể bật lại nếu dùng cookie form truyền thống
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/api/auth/**"))
                 .cors(cors -> {
                     cors.configurationSource(corsConfig.corsConfigurationSource());
                 })
@@ -44,10 +47,22 @@ public class SecurityConfig {
                         // các request còn lại phải đăng nhập
                         .anyRequest().authenticated())
 
+                .formLogin(form -> form
+                        .loginProcessingUrl("/api/auth/login") // where the form is POSTed
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .successHandler((request, response, authentication) -> {
+                            response.setStatus(200); // cookies are set; frontend can call /api/auth/me for user data
+                        })
+                        .failureHandler((request, response, ex) -> {
+                            response.setStatus(401);
+                        }))
+
                 .rememberMe(save -> save
                         .key("IamYourAdminYouKnow?")
                         .rememberMeParameter("remember-me")
-                        .tokenValiditySeconds(24 * 60 * 60));
+                        .tokenValiditySeconds(24 * 60 * 60)
+                        .userDetailsService(userDetailsService));
 
         return http.build();
     }

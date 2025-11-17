@@ -9,10 +9,14 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import * as yup from "yup";
 
-const { doLogin } = useAuth();
+const { doLogin, user } = useAuth();
 const toast = useToast();
+const router = useRouter();
 
 const initialValues = ref({ username: "", password: "", rememberMe: false });
+const username = ref("");
+const password = ref("");
+const rememberMe = ref(false);
 const resolver = ref(
     yupResolver(
         yup.object({
@@ -40,12 +44,14 @@ const onFormSubmit = async (e) => {
             rememberMe: Boolean(e.values.rememberMe),
         });
 
-        showSuccess(`Welcome back!, ${e.values.username}`, {
+        showSuccess(toast, `Welcome back!, ${e.values.username}`, {
             summary: "Login successful",
         });
-        useRouter().push({ path: "/" });
+        // Make sure state is set before navigating
+        if (!user.value) user.value = data;
+        router.push({ path: "/" });
     } catch (err) {
-        showError(err, { summary: "Login failed" });
+        showError(toast, err, { summary: "Login failed" });
         console.error("Login error", err);
     }
 };

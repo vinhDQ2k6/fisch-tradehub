@@ -1,12 +1,5 @@
 package com.fisch_tradehub.tradehub_core.web.api;
 
-import com.fisch_tradehub.tradehub_core.web.dto.LoginRequest;
-import com.fisch_tradehub.tradehub_core.web.dto.RegisterRequest;
-import com.fisch_tradehub.tradehub_core.web.dto.UserDTO;
-import com.fisch_tradehub.tradehub_core.web.model.User;
-import com.fisch_tradehub.tradehub_core.dao.UserRepository;
-import lombok.RequiredArgsConstructor;
-
 import java.net.URI;
 import java.util.List;
 
@@ -23,10 +16,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fisch_tradehub.tradehub_core.dao.UserRepository;
+import com.fisch_tradehub.tradehub_core.web.dto.LoginRequest;
+import com.fisch_tradehub.tradehub_core.web.dto.RegisterRequest;
+import com.fisch_tradehub.tradehub_core.web.dto.UserDTO;
+import com.fisch_tradehub.tradehub_core.web.model.User;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,14 +44,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request,
-                                   HttpServletRequest httpRequest,
-                                   HttpServletResponse httpResponse) {
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
         try {
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                            request.username(),
-                            request.password()
-                    );
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    request.username(),
+                    request.password());
 
             Authentication authentication = authenticationManager.authenticate(authToken);
 
@@ -64,8 +66,7 @@ public class AuthController {
                     user.getId(),
                     user.getUsername(),
                     user.getEmail(),
-                    List.of(user.getRole())
-            );
+                    List.of(user.getRole()));
 
             return ResponseEntity.ok(dto);
         } catch (BadCredentialsException ex) {
@@ -88,9 +89,9 @@ public class AuthController {
         user.setUsername(request.username());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password())); // BCrypt
-        user.setRole("USER");       // trong DB lưu "USER", UserDetailsService sẽ .roles("USER")
-                                  // nếu bạn muốn mặc định ADMIN cho dev thì đổi "ADMIN"
-        user.setActive(true);       // hoặc setEnabled(true) tùy field của bạn
+        user.setRole("USER"); // trong DB lưu "USER", UserDetailsService sẽ .roles("USER")
+                              // nếu bạn muốn mặc định ADMIN cho dev thì đổi "ADMIN"
+        user.setActive(true); // hoặc setEnabled(true) tùy field của bạn
 
         try {
             user = userRepository.save(user);
@@ -103,8 +104,7 @@ public class AuthController {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                List.of(user.getRole())
-        );
+                List.of(user.getRole()));
 
         // 201 Created + location optional
         return ResponseEntity
@@ -126,8 +126,7 @@ public class AuthController {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                List.of(user.getRole())
-        );
+                List.of(user.getRole()));
 
         return ResponseEntity.ok(dto);
     }
@@ -135,8 +134,8 @@ public class AuthController {
     // Hủy session hiện tại + cookie JSESSIONID
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    Authentication authentication) {
+            HttpServletResponse response,
+            Authentication authentication) {
 
         if (authentication != null) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);

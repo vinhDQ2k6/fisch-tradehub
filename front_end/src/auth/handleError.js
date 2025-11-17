@@ -1,5 +1,3 @@
-import { useToast } from "primevue/usetoast";
-
 function mapFriendlyMessage(err) {
     const status = err?.status;
     if (!status) {
@@ -64,8 +62,7 @@ function extractValidationMessage(data) {
     return data.error || data.message || null;
 }
 
-export function showError(err, opts = {}) {
-    const toast = useToast();
+export function showError(toast, err, opts = {}) {
     const mapped = mapFriendlyMessage(err);
     const dataMsg = extractValidationMessage(err?.data);
     const detail =
@@ -79,8 +76,7 @@ export function showError(err, opts = {}) {
     toast.add({ severity, summary, detail, life: opts.life ?? 4000 });
 }
 
-export function showSuccess(message, opts = {}) {
-    const toast = useToast();
+export function showSuccess(toast, message, opts = {}) {
     const summary = opts.summary || "Success";
     const severity = opts.severity || "success";
     toast.add({ severity, summary, detail: message, life: opts.life ?? 3000 });

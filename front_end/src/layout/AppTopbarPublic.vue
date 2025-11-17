@@ -7,6 +7,7 @@ import AppConfigurator from "./AppConfigurator.vue";
 
 const { toggleDarkMode, isDarkTheme } = useLayout();
 const { user, doLogout } = useAuth();
+const router = useRouter();
 const isLogged = computed(() => !!user.value);
 
 function smoothScroll(id) {
@@ -166,7 +167,7 @@ function smoothScroll(id) {
                                         @click="
                                             async () => {
                                                 await doLogout();
-                                                useRouter().push('/');
+                                                router.push('/');
                                             }
                                         "
                                         class="flex items-center gap-2 p-2 w-full text-left text-surface-900 dark:text-surface-0 rounded hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
