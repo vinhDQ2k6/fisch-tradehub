@@ -1,10 +1,16 @@
 package com.fisch_tradehub.tradehub_core.web.api;
 
 import com.fisch_tradehub.tradehub_core.web.dto.LoginRequest;
+import com.fisch_tradehub.tradehub_core.web.dto.RegisterRequest;
 import com.fisch_tradehub.tradehub_core.web.dto.UserDTO;
 import com.fisch_tradehub.tradehub_core.web.model.User;
 import com.fisch_tradehub.tradehub_core.dao.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.net.URI;
+import java.util.List;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +36,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final SecurityContextRepository securityContextRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request,
@@ -56,13 +64,52 @@ public class AuthController {
                     user.getId(),
                     user.getUsername(),
                     user.getEmail(),
-                    user.getRole()
+                    List.of(user.getRole())
             );
 
             return ResponseEntity.ok(dto);
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(401).body("Invalid username or password");
         }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        // 1. Kiểm tra trùng username/email
+        if (userRepository.findByUsername(request.username()).isPresent()) {
+            return ResponseEntity.status(409).body("Username already exists");
+        }
+        if (userRepository.findByEmail(request.email()).isPresent()) { // nếu bạn có findByEmail
+            return ResponseEntity.status(409).body("Email already exists");
+        }
+
+        // 2. Tạo user mới
+        User user = new User();
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password())); // BCrypt
+        user.setRole("USER");       // trong DB lưu "USER", UserDetailsService sẽ .roles("USER")
+                                  // nếu bạn muốn mặc định ADMIN cho dev thì đổi "ADMIN"
+        user.setActive(true);       // hoặc setEnabled(true) tùy field của bạn
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            // fallback nếu DB có unique constraint mà chưa check phía trên
+            return ResponseEntity.status(409).body("User already exists");
+        }
+
+        UserDTO dto = new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                List.of(user.getRole())
+        );
+
+        // 201 Created + location optional
+        return ResponseEntity
+                .created(URI.create("/api/auth/users/" + user.getId()))
+                .body(dto);
     }
 
     // Dùng để Vue check xem đang login hay không
@@ -79,7 +126,7 @@ public class AuthController {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole()
+                List.of(user.getRole())
         );
 
         return ResponseEntity.ok(dto);

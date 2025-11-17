@@ -2,8 +2,8 @@
 
 Legend:
 
--   ☑ = already done in this project
--   ☐ = still to do / to verify
+- ☑ = already done in this project
+- ☐ = still to do / to verify
 
 ---
 
@@ -13,8 +13,8 @@ Legend:
 | --- | --------------------------------------------------------------------------------- | ---------------------------------------- |
 | 0.1 | Decide on session-based auth (Spring Security + JSESSIONID + remember-me cookies) | ☑ (current design)                       |
 | 0.2 | Frontend is a SPA (Vue 3 + PrimeVue + fetch)                                      | ☑                                        |
-| 0.3 | Backend is Spring Boot + Spring Security + JPA + MySQL                            | ☐ (assumed / to wire)                    |
-| 0.4 | Data model uses users, roles, and possibly permissions tables                     | ☐                                        |
+| 0.3 | Backend is Spring Boot + Spring Security + JPA + MySQL                            | ☑ (assumed / to wire)                    |
+| 0.4 | Data model uses users, roles, and possibly permissions tables                     | ☑                                        |
 | 0.5 | Transport uses `fetch` with `credentials: "include"` for cookies                  | ☑ (`apiFetch` + `login` already do this) |
 
 ---
@@ -32,12 +32,12 @@ Legend:
 
 **Backend outline (conceptual)**
 
--   `User` entity with fields:
-    -   `username`, `password`, `email`, `enabled`, `accountNonLocked`, etc.
-    -   `roles: Set<Role>`
--   `Role` entity with `name` (e.g. `ROLE_USER`).
--   Spring Data repositories:
-    -   `UserRepository` with `findByUsername(String username)`.
+- `User` entity with fields:
+  - `username`, `password`, `email`, `enabled`, `accountNonLocked`, etc.
+  - `roles: Set<Role>`
+- `Role` entity with `name` (e.g. `ROLE_USER`).
+- Spring Data repositories:
+  - `UserRepository` with `findByUsername(String username)`.
 
 ---
 
@@ -56,17 +56,17 @@ Legend:
 
 **Key Spring Security decisions**
 
--   **Authentication**:
-    -   Form login endpoint at `/auth/login` (or `/login`), accept `username`, `password`, `"remember-me"` from form.
-    -   On success, set `JSESSIONID` and optionally remember-me cookie.
--   **CSRF**:
-    -   Use cookie `XSRF-TOKEN` and expect header `X-XSRF-TOKEN` on mutating requests.
--   **Remember-me**:
-    -   Either “token-based cookie” or persistent token stored in `remember_me_tokens` table.
--   **Authorization**:
-    -   Map routes and methods to required roles, e.g.:
-        -   `/api/user/**` → `hasRole('USER')`
-        -   `/api/admin/**` → `hasRole('ADMIN')`
+- **Authentication**:
+  - Form login endpoint at `/auth/login` (or `/login`), accept `username`, `password`, `"remember-me"` from form.
+  - On success, set `JSESSIONID` and optionally remember-me cookie.
+- **CSRF**:
+  - Use cookie `XSRF-TOKEN` and expect header `X-XSRF-TOKEN` on mutating requests.
+- **Remember-me**:
+  - Either “token-based cookie” or persistent token stored in `remember_me_tokens` table.
+- **Authorization**:
+  - Map routes and methods to required roles, e.g.:
+    - `/api/user/**` → `hasRole('USER')`
+    - `/api/admin/**` → `hasRole('ADMIN')`
 
 ---
 
@@ -83,9 +83,9 @@ Legend:
 
 **Recommended JSON responses**
 
--   `/auth/me` → `{ "username": "...", "roles": ["ROLE_USER", "ROLE_ADMIN"], ... }`
--   `/auth/register` → basic success or created user info:
-    -   On conflict (user exists) respond with `409` and `{ "message": "User already exists" }`.
+- `/auth/me` → `{ "username": "...", "roles": ["ROLE_USER", "ROLE_ADMIN"], ... }`
+- `/auth/register` → basic success or created user info:
+  - On conflict (user exists) respond with `409` and `{ "message": "User already exists" }`.
 
 ---
 
@@ -102,9 +102,9 @@ Legend:
 
 **Practical effects**
 
--   Every frontend request goes through `apiFetch` or explicit `fetch(...)` with:
-    -   `credentials: "include"` so cookies (JSESSIONID + remember-me) work.
-    -   Automatic JSON parsing and a consistent error shape, used by `showError`.
+- Every frontend request goes through `apiFetch` or explicit `fetch(...)` with:
+  - `credentials: "include"` so cookies (JSESSIONID + remember-me) work.
+  - Automatic JSON parsing and a consistent error shape, used by `showError`.
 
 ---
 
@@ -232,5 +232,5 @@ Legend:
 
 ### Next Steps
 
--   Implement the remaining backend pieces (entities, security config, controllers) to fully align with this guide.
--   Optionally display the current username from `useAuth().user`.
+- Implement the remaining backend pieces (entities, security config, controllers) to fully align with this guide.
+- Optionally display the current username from `useAuth().user`.

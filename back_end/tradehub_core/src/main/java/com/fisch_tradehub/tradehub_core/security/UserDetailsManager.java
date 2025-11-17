@@ -26,14 +26,11 @@ public class UserDetailsManager implements UserDetailsService {
         User user = dao.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // DB lưu: "ADMIN", "USER", ...
-        String role = user.getRole();
-
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
                 // sẽ thành ROLE_ADMIN, ROLE_USER ở bên trong
-                .roles(role)
+                .roles(user.getRole())
                 .disabled(!user.isActive())
                 .build();
     }

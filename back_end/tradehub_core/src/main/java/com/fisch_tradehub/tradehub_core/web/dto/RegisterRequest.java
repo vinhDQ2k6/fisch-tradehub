@@ -1,10 +1,7 @@
 package com.fisch_tradehub.tradehub_core.web.dto;
 
-import java.util.List;
-
-public record UserDTO(
-        Long id,
+public record RegisterRequest(
         String username,
         String email,
-        List<String> roles
+        String password
 ) {}
