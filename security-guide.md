@@ -2,8 +2,8 @@
 
 Legend:
 
-- ☑ = already done in this project
-- ☐ = still to do / to verify
+-   ☑ = already done in this project
+-   ☐ = still to do / to verify
 
 ---
 
@@ -21,71 +21,71 @@ Legend:
 
 ## 1. Backend: Domain + Database (MySQL)
 
-| #   | Step                                                                                       | Status |
-| --- | ------------------------------------------------------------------------------------------ | ------ |
-| 1.1 | Create `users` table (id, username, password, email, enabled, locked, etc.)                | ☐      |
-| 1.2 | Create `roles` table (id, name: `ROLE_USER`, `ROLE_ADMIN`, …)                              | ☐      |
-| 1.3 | Create join table `user_roles` (user_id, role_id)                                          | ☐      |
-| 1.4 | Optional: create `remember_me_tokens` table if using persistent remember-me                | ☐      |
-| 1.5 | Configure Spring Boot to connect to MySQL via `application.yml` / `application.properties` | ☐      |
-| 1.6 | Add JPA entities `User`, `Role` and repositories                                           | ☐      |
+| #   | Step                                                                                       | Status                         |
+| --- | ------------------------------------------------------------------------------------------ | ------------------------------ |
+| 1.1 | Create `users` table (id, username, password, email, enabled, locked, etc.)                | ☑ (H2/MySQL entity exists)     |
+| 1.2 | Create `roles` table (id, name: `ROLE_USER`, `ROLE_ADMIN`, …)                              | ☑ (via enum/role field)        |
+| 1.3 | Create join table `user_roles` (user_id, role_id)                                          | ☐ (only simple role field now) |
+| 1.4 | Optional: create `remember_me_tokens` table if using persistent remember-me                | ☐                              |
+| 1.5 | Configure Spring Boot to connect to MySQL via `application.yml` / `application.properties` | ☐ (uses default dev DB)        |
+| 1.6 | Add JPA entities `User`, `Role` and repositories                                           | ☑ (User + UserRepository)      |
 
 **Backend outline (conceptual)**
 
-- `User` entity with fields:
-  - `username`, `password`, `email`, `enabled`, `accountNonLocked`, etc.
-  - `roles: Set<Role>`
-- `Role` entity with `name` (e.g. `ROLE_USER`).
-- Spring Data repositories:
-  - `UserRepository` with `findByUsername(String username)`.
+-   `User` entity with fields:
+    -   `username`, `password`, `email`, `enabled`, `accountNonLocked`, etc.
+    -   `roles: Set<Role>`
+-   `Role` entity with `name` (e.g. `ROLE_USER`).
+-   Spring Data repositories:
+    -   `UserRepository` with `findByUsername(String username)`.
 
 ---
 
 ## 2. Backend: Spring Security Configuration (Session + Remember-Me)
 
-| #   | Step                                                                                               | Status |
-| --- | -------------------------------------------------------------------------------------------------- | ------ |
-| 2.1 | Add Spring Security dependency in `pom.xml` / `build.gradle`                                       | ☐      |
-| 2.2 | Implement `UserDetailsService` backed by MySQL (`UserRepository`)                                  | ☐      |
-| 2.3 | Configure password encoder (`BCryptPasswordEncoder`)                                               | ☐      |
-| 2.4 | Configure HTTP security with `/auth/login`, `/auth/logout`, `/auth/me`, `/auth/register` endpoints | ☐      |
-| 2.5 | Enable CSRF with cookie token (`XSRF-TOKEN`) compatible with SPA                                   | ☐      |
-| 2.6 | Enable `remember-me` using Spring Security (cookie or persistent token)                            | ☐      |
-| 2.7 | Configure session management (max sessions, invalid session handling)                              | ☐      |
-| 2.8 | Add role-based authorization rules (`/admin/**` → `ROLE_ADMIN`, etc.)                              | ☐      |
+| #   | Step                                                                                                               | Status                        |
+| --- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
+| 2.1 | Add Spring Security dependency in `pom.xml` / `build.gradle`                                                       | ☑                             |
+| 2.2 | Implement `UserDetailsService` backed by repository (`UserRepository`)                                             | ☑                             |
+| 2.3 | Configure password encoder (`BCryptPasswordEncoder`)                                                               | ☑                             |
+| 2.4 | Configure HTTP security with `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`, `/api/auth/register` endpoints | ☑                             |
+| 2.5 | Enable CSRF with cookie token (`XSRF-TOKEN`) compatible with SPA                                                   | ☑ (CookieCsrfTokenRepository) |
+| 2.6 | Enable `remember-me` using Spring Security (token-based cookie)                                                    | ☑                             |
+| 2.7 | Configure session management (max sessions, invalid session handling)                                              | ☐ (uses defaults)             |
+| 2.8 | Add role-based authorization rules (`/admin/**` → `ROLE_ADMIN`, etc.)                                              | ☑ (basic antMatchers)         |
 
 **Key Spring Security decisions**
 
-- **Authentication**:
-  - Form login endpoint at `/auth/login` (or `/login`), accept `username`, `password`, `"remember-me"` from form.
-  - On success, set `JSESSIONID` and optionally remember-me cookie.
-- **CSRF**:
-  - Use cookie `XSRF-TOKEN` and expect header `X-XSRF-TOKEN` on mutating requests.
-- **Remember-me**:
-  - Either “token-based cookie” or persistent token stored in `remember_me_tokens` table.
-- **Authorization**:
-  - Map routes and methods to required roles, e.g.:
-    - `/api/user/**` → `hasRole('USER')`
-    - `/api/admin/**` → `hasRole('ADMIN')`
+-   **Authentication**:
+    -   Form login endpoint at `/auth/login` (or `/login`), accept `username`, `password`, `"remember-me"` from form.
+    -   On success, set `JSESSIONID` and optionally remember-me cookie.
+-   **CSRF**:
+    -   Use cookie `XSRF-TOKEN` and expect header `X-XSRF-TOKEN` on mutating requests.
+-   **Remember-me**:
+    -   Either “token-based cookie” or persistent token stored in `remember_me_tokens` table.
+-   **Authorization**:
+    -   Map routes and methods to required roles, e.g.:
+        -   `/api/user/**` → `hasRole('USER')`
+        -   `/api/admin/**` → `hasRole('ADMIN')`
 
 ---
 
 ## 3. Backend: Auth Endpoints
 
-| #   | Step                                                                              | Status |
-| --- | --------------------------------------------------------------------------------- | ------ |
-| 3.1 | Implement `/auth/login` to process form login (POST, URL-encoded)                 | ☐      |
-| 3.2 | Implement `/auth/logout` (POST) that clears session and remember-me cookie        | ☐      |
-| 3.3 | Implement `/auth/me` (GET) to return current user info and roles if authenticated | ☐      |
-| 3.4 | Implement `/auth/register` (POST) to create users in MySQL                        | ☐      |
-| 3.5 | Ensure `/auth/me` and `/auth/logout` require authentication                       | ☐      |
-| 3.6 | Ensure `/auth/register` and `/auth/login` are publicly accessible                 | ☐      |
+| #   | Step                                                                                  | Status                         |
+| --- | ------------------------------------------------------------------------------------- | ------------------------------ |
+| 3.1 | Implement `/api/auth/login` to authenticate user and issue session/remember-me        | ☑ (JSON body → `LoginRequest`) |
+| 3.2 | Implement `/api/auth/logout` (POST) that clears session and remember-me cookie        | ☑ (via Spring `LogoutHandler`) |
+| 3.3 | Implement `/api/auth/me` (GET) to return current user info and roles if authenticated | ☑                              |
+| 3.4 | Implement `/api/auth/register` (POST) to create users in DB                           | ☑                              |
+| 3.5 | Ensure `/api/auth/me` and `/api/auth/logout` require authentication                   | ☑                              |
+| 3.6 | Ensure `/api/auth/register` and `/api/auth/login` are publicly accessible             | ☑                              |
 
 **Recommended JSON responses**
 
-- `/auth/me` → `{ "username": "...", "roles": ["ROLE_USER", "ROLE_ADMIN"], ... }`
-- `/auth/register` → basic success or created user info:
-  - On conflict (user exists) respond with `409` and `{ "message": "User already exists" }`.
+-   `/auth/me` → `{ "username": "...", "roles": ["ROLE_USER", "ROLE_ADMIN"], ... }`
+-   `/auth/register` → basic success or created user info:
+    -   On conflict (user exists) respond with `409` and `{ "message": "User already exists" }`.
 
 ---
 
@@ -102,9 +102,9 @@ Legend:
 
 **Practical effects**
 
-- Every frontend request goes through `apiFetch` or explicit `fetch(...)` with:
-  - `credentials: "include"` so cookies (JSESSIONID + remember-me) work.
-  - Automatic JSON parsing and a consistent error shape, used by `showError`.
+-   Every frontend request goes through `apiFetch` or explicit `fetch(...)` with:
+    -   `credentials: "include"` so cookies (JSESSIONID + remember-me) work.
+    -   Automatic JSON parsing and a consistent error shape, used by `showError`.
 
 ---
 
@@ -200,6 +200,8 @@ Legend:
 | 11.4 | Wire Logout action from topbar/profile menu using `doLogout()`   | ☑                         |
 | 11.5 | Optionally show username in topbar (e.g. `user.value.username`)  | ☐                         |
 
+> TODO: add username/avatar display in `AppTopbarPublic.vue` once `/api/auth/me` returns it consistently.
+
 ---
 
 ## 12. Backend: Role-Based Authorization with MySQL
@@ -217,20 +219,79 @@ Legend:
 
 ## 13. Testing the Full Flow
 
-| #    | Step                                                                             | Status |
-| ---- | -------------------------------------------------------------------------------- | ------ |
-| 13.1 | Start backend (Spring Boot with MySQL)                                           | ☐      |
-| 13.2 | Start frontend (`npm install`, then `npm run dev`)                               | ☐      |
-| 13.3 | Register a user, with remember-me checked                                        | ☐      |
-| 13.4 | Confirm session + remember-me cookies in browser                                 | ☐      |
-| 13.5 | Close browser, reopen, navigate to app → still authenticated (remember-me works) | ☐      |
-| 13.6 | Logout and confirm both session and remember-me cleared                          | ☐      |
-| 13.7 | Attempt to access protected route when logged out → redirected to login          | ☐      |
-| 13.8 | Attempt to access admin route as non-admin → access denied                       | ☐      |
+| #    | Step                                                                             | Status          |
+| ---- | -------------------------------------------------------------------------------- | --------------- |
+| 13.1 | Start backend (Spring Boot with MySQL/H2)                                        | ☑ (dev profile) |
+| 13.2 | Start frontend (`npm install`, then `npm run dev`)                               | ☑               |
+| 13.3 | Register a user, with remember-me checked                                        | ☑ (manual test) |
+| 13.4 | Confirm session + remember-me cookies in browser                                 | ☑ (verified)    |
+| 13.5 | Close browser, reopen, navigate to app → still authenticated (remember-me works) | ☑ (verified)    |
+| 13.6 | Logout and confirm both session and remember-me cleared                          | ☑ (verified)    |
+| 13.7 | Attempt to access protected route when logged out → redirected to login          | ☑ (route guard) |
+| 13.8 | Attempt to access admin route as non-admin → access denied                       | ☐ (to verify)   |
 
 ---
 
 ### Next Steps
 
-- Implement the remaining backend pieces (entities, security config, controllers) to fully align with this guide.
-- Optionally display the current username from `useAuth().user`.
+-   Finish DB hardening (roles join table, persistent remember-me tokens if needed).
+-   Add role JSON to `/api/auth/me` and wire it into route guard + UI.
+-   Display the current username from `useAuth().user` in the topbar.
+-   Verify admin-only routes behave correctly with real role data.
+
+---
+
+## Appendix: Logout & Cookie Clearing
+
+This project uses Spring Security's standard logout handling plus a custom `/api/auth/logout` endpoint. The goal is that logout invalidates the HTTP session **and** removes the remember-me cookie so the browser does not auto-login again.
+
+### Backend: ensure logout clears cookies
+
+-   In `SecurityConfig`:
+
+    -   Configure logout to invalidate the HTTP session and delete cookies, typically:
+
+        ```java
+        http
+            .logout(logout -> logout
+                .logoutUrl("/api/auth/logout")
+                .deleteCookies("JSESSIONID", "remember-me")
+                .invalidateHttpSession(true)
+            );
+        ```
+
+-   If you call logout manually (e.g. in `AuthController.logout`):
+
+    -   Use `SecurityContextLogoutHandler` which already invalidates the session and clears authentication.
+    -   After that, explicitly remove the remember-me cookie:
+
+        ```java
+        @PostMapping("/api/auth/logout")
+        public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response, Authentication auth) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+
+            Cookie remember = new Cookie("remember-me", "");
+            remember.setMaxAge(0);
+            remember.setPath("/");
+            response.addCookie(remember);
+
+            return ResponseEntity.ok().build();
+        }
+        ```
+
+> Use the **same cookie name** you configured in `.rememberMe()` (default is `remember-me`).
+
+### Frontend: calling logout
+
+-   In `authService.logout` (already implemented):
+    -   Call `apiFetch("/api/auth/logout", { method: "POST" })` with `credentials: "include"`.
+-   In `useAuth.doLogout()`:
+    -   Await `logout()` and then set `user.value = null`.
+-   In `AppTopbarPublic.vue`:
+    -   Wire the logout button/menu item to `await doLogout()` and then navigate to `/`.
+
+Once backend and frontend parts are wired as above, logging out will:
+
+-   Invalidate the Spring Security session.
+-   Delete the `remember-me` cookie in the browser.
+-   Clear the client-side auth state so the topbar shows Login/Register again.

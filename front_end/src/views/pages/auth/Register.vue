@@ -10,8 +10,9 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import * as yup from "yup";
 
-const { doLogin } = useAuth();
+const { doLogin, user } = useAuth();
 const toast = useToast();
+const router = useRouter();
 
 const initialValues = ref({
     username: "",
@@ -58,7 +59,7 @@ const onFormSubmit = async (e) => {
             password: e.values.password,
         });
 
-        showSuccess("Your account has been created.", {
+        showSuccess(toast, "Your account has been created.", {
             summary: "Registration successful",
         });
         if (e.values.rememberMe) {
@@ -67,12 +68,14 @@ const onFormSubmit = async (e) => {
                 password: e.values.password,
                 rememberMe: Boolean(e.values.rememberMe),
             });
-            useRouter().push({ path: "/" });
+            // Make sure state is set before navigating
+            if (!user.value) user.value = data;
+            router.push({ path: "/" });
         } else {
-            useRouter().push({ path: "/auth/login" });
+            router.push({ path: "/auth/login" });
         }
     } catch (err) {
-        showError(err, { summary: "Registration failed" });
+        showError(toast, err, { summary: "Registration failed" });
         console.error("Register error", err);
     }
 };
