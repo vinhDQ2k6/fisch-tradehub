@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
@@ -138,9 +139,25 @@ public class AuthController {
                                     HttpServletResponse response,
                                     Authentication authentication) {
 
-        if (authentication != null) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
+        Authentication currentAuth = authentication;
+        if (currentAuth == null) {
+            currentAuth = SecurityContextHolder.getContext().getAuthentication();
         }
+
+        CookieClearingLogoutHandler cookieClearingLogoutHandler =
+                new CookieClearingLogoutHandler("JSESSIONID", "remember-me");
+
+        cookieClearingLogoutHandler.logout(request, response, currentAuth);
+
+        if (currentAuth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, currentAuth);
+        } else {
+            SecurityContextHolder.clearContext();
+        }
+
+        SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
+        SecurityContextHolder.setContext(emptyContext);
+        securityContextRepository.saveContext(emptyContext, request, response);
         return ResponseEntity.ok("Logged out");
     }
 }

@@ -31,7 +31,8 @@ public class SecurityConfig {
         http
                 // REST API + SPA, tạm tắt CSRF (Có thể bật lại nếu dùng cookie form truyền thống
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/api/auth/**"))
                 .cors(cors -> {
                     cors.configurationSource(corsConfig.corsConfigurationSource());
                 })
