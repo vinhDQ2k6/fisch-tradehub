@@ -1,7 +1,17 @@
 package com.fisch_tradehub.tradehub_core.web.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public record RegisterRequest(
-        String username,
-        String email,
-        String password
+        @NotBlank(message = "Username is required")
+        @Size(max = 50, message = "Username must be at most 50 characters") String username,
+
+        @NotBlank(message = "Email is required")
+        @Email(message = "Email format is invalid")
+        @Size(max = 100, message = "Email must be at most 100 characters") String email,
+
+        @NotBlank(message = "Password is required")
+        @Size(min = 8, max = 100, message = "Password must be 8-100 characters") String password
 ) {}

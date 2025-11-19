@@ -31,6 +31,7 @@ import com.fisch_tradehub.tradehub_core.web.model.User;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -44,7 +45,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request,
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
         try {
@@ -76,7 +77,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         // 1. Kiểm tra trùng username/email
         if (userRepository.findByUsername(request.username()).isPresent()) {
             return ResponseEntity.status(409).body("Username already exists");
