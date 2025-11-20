@@ -47,4 +47,10 @@ public class CartController {
         cartService.removeFromCart(userDetails.getUsername(), fishId);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> clearCart(@AuthenticationPrincipal UserDetails userDetails) {
+        cartService.clearCart(userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
 }

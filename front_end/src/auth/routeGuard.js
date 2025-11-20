@@ -11,7 +11,7 @@ export function createAuthGuard(router) {
         if (to.meta?.roles && to.meta.roles.length) {
             const roles = user.value?.roles || [];
             const allowed = to.meta.roles.some((r) => roles.includes(r));
-            if (!allowed) return { path: "/auth/error", query: { code: 403 } };
+            if (!allowed) return { path: "/auth/access", query: { code: 403 } };
         }
         return true;
     });

@@ -1,8 +1,12 @@
 <script setup>
+import { useAuth } from "@/auth/useAuth";
 import { useLayout } from "@/layout/composables/layout";
+import { useRouter } from "vue-router";
 import AppConfigurator from "./AppConfigurator.vue";
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+const { doLogout } = useAuth();
+const router = useRouter();
 </script>
 
 <template>
@@ -76,10 +80,54 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+                    <div class="relative">
+                        <button
+                            type="button"
+                            v-styleclass="{
+                                selector: '@next',
+                                enterFromClass: 'hidden',
+                                enterActiveClass: 'animate-scalein',
+                                leaveToClass: 'hidden',
+                                leaveActiveClass: 'animate-fadeout',
+                                hideOnOutsideClick: true,
+                            }"
+                            class="layout-topbar-action"
+                        >
+                            <i class="pi pi-user"></i>
+                            <span>Profile</span>
+                        </button>
+
+                        <div
+                            class="hidden absolute top-13 right-0 w-32 p-2 bg-surface-0 dark:bg-surface-900 border border-surface rounded-border origin-top shadow-[0px_3px_5px_rgba(0,0,0,0.02),0px_0px_2px_rgba(0,0,0,0.05),0px_1px_4px_rgba(0,0,0,0.08)] z-50"
+                        >
+                            <ul class="list-none m-0 p-2">
+                                <li>
+                                    <router-link
+                                        to="/auth/profile"
+                                        class="flex items-center gap-2 p-2 text-surface-900 dark:text-surface-0 rounded hover:bg-surface-100 dark:hover:bg-surface-800"
+                                    >
+                                        <i class="pi pi-user"></i>
+                                        <span>Profile</span>
+                                    </router-link>
+                                </li>
+                                <li>
+                                    <button
+                                        type="button"
+                                        @click="
+                                            async () => {
+                                                await doLogout();
+                                                router.push('/');
+                                            }
+                                        "
+                                        class="flex items-center gap-2 p-2 w-full text-left text-surface-900 dark:text-surface-0 rounded hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer"
+                                    >
+                                        <i class="pi pi-sign-out"></i>
+                                        <span>Log out</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

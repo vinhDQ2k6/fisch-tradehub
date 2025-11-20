@@ -9,12 +9,17 @@ const router = createRouter({
         {
             path: "/dashboard",
             component: AppLayoutPrivate,
+            meta: { requiresAuth: true, roles: ["ADMIN"] },
             children: [
                 {
                     path: "/dashboard",
                     name: "dashboard",
                     component: () => import("@/views/Dashboard.vue"),
-                    meta: { requiresAuth: true, roles: ["ROLE_ADMIN"] },
+                },
+                {
+                    path: "/dashboard/bills",
+                    name: "bills",
+                    component: () => import("@/views/pages/Bills.vue"),
                 },
             ],
         },
@@ -26,6 +31,17 @@ const router = createRouter({
                     path: "/",
                     name: "landing",
                     component: () => import("@/views/pages/Landing.vue"),
+                },
+                {
+                    path: "/fishes",
+                    name: "fishes",
+                    component: () => import("@/views/pages/FischTrade.vue"),
+                },
+                {
+                    path: "/debts",
+                    name: "debts",
+                    component: () => import("@/views/pages/Debts.vue"),
+                    meta: { requiresAuth: true },
                 },
             ],
         },
@@ -45,6 +61,12 @@ const router = createRouter({
             component: () => import("@/views/pages/auth/Register.vue"),
         },
         {
+            path: "/auth/profile",
+            name: "profile",
+            component: () => import("@/views/pages/auth/Profile.vue"),
+            meta: { requiresAuth: true },
+        },
+        {
             path: "/auth/access",
             name: "accessDenied",
             component: () => import("@/views/pages/auth/Access.vue"),
@@ -53,6 +75,10 @@ const router = createRouter({
             path: "/auth/error",
             name: "error",
             component: () => import("@/views/pages/auth/Error.vue"),
+        },
+        {
+            path: "/:pathMatch(.*)*",
+            redirect: "/pages/notfound",
         },
     ],
 });

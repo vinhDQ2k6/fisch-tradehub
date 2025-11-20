@@ -14,9 +14,9 @@ const toast = useToast();
 const router = useRouter();
 
 const initialValues = ref({ username: "", password: "", rememberMe: false });
-const username = ref("");
-const password = ref("");
-const rememberMe = ref(false);
+// const username = ref("");
+// const password = ref("");
+// const rememberMe = ref(false);
 const resolver = ref(
     yupResolver(
         yup.object({

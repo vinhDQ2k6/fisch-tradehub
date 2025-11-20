@@ -3,7 +3,8 @@ package com.fisch_tradehub.tradehub_core.entity;
 public enum BillStatus {
     PENDING_PAYMENT(0),
     PROCESSING(1),
-    COMPLETED(2);
+    COMPLETED(2),
+    CANCELLED(3);
 
     private final int value;
 

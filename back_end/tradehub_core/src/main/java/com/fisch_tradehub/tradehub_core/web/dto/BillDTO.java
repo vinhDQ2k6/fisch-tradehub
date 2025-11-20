@@ -7,9 +7,10 @@ import java.util.List;
 import com.fisch_tradehub.tradehub_core.entity.BillStatus;
 
 public record BillDTO(
-    Long id,
-    BigDecimal total,
-    BillStatus status,
-    LocalDateTime createdAt,
-    List<BillInfoDTO> items
-) {}
+        Long id,
+        String customer,
+        BigDecimal total,
+        BillStatus status,
+        LocalDateTime createdAt,
+        List<BillInfoDTO> items) {
+}

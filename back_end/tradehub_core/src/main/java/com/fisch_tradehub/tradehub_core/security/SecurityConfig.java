@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 public class SecurityConfig {
@@ -34,10 +33,7 @@ public class SecurityConfig {
         http
                 // Tắt CSRF để test API dễ dàng hơn (vì đây là dự án học tập)
                 // Nếu muốn bật lại, cần cấu hình frontend gửi header X-XSRF-TOKEN
-                // .csrf(csrf -> csrf.disable())
-                .csrf(csrf -> csrf
-                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                    .ignoringRequestMatchers("/api/auth/**"))
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> {
                     cors.configurationSource(corsConfig.corsConfigurationSource());
                 })

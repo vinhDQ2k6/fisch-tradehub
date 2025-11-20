@@ -10,6 +10,16 @@ const model = ref([
             { label: "Dashboard", icon: "pi pi-fw pi-home", to: "/dashboard" },
         ],
     },
+    {
+        label: "Workspace",
+        items: [
+            {
+                label: "Bills Solver",
+                icon: "pi pi-fw pi-money-bill",
+                to: "/dashboard/bills",
+            },
+        ],
+    },
 ]);
 </script>
 
