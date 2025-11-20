@@ -7,23 +7,23 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.fisch_tradehub.tradehub_core.dao.UserRepository;
-import com.fisch_tradehub.tradehub_core.web.model.User;
+import com.fisch_tradehub.tradehub_core.entity.User;
+import com.fisch_tradehub.tradehub_core.repository.UserRepository;
 
 @Service
 public class UserDetailsManager implements UserDetailsService {
 
-    private final UserRepository dao;
+    private final UserRepository userRepository;
 
     public UserDetailsManager(UserRepository userRepository) {
-        this.dao = userRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Objects.requireNonNull(username, "username must not be null");
 
-        User user = dao.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return org.springframework.security.core.userdetails.User

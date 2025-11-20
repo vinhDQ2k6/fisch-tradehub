@@ -1,11 +1,11 @@
-package com.fisch_tradehub.tradehub_core.dao;
+package com.fisch_tradehub.tradehub_core.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.fisch_tradehub.tradehub_core.web.model.Bill;
-import com.fisch_tradehub.tradehub_core.web.model.User;
+import com.fisch_tradehub.tradehub_core.entity.Bill;
+import com.fisch_tradehub.tradehub_core.entity.User;
 
 public interface BillRepository extends JpaRepository<Bill, Long> {
 

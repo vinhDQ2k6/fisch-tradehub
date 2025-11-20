@@ -1,13 +1,25 @@
-package com.fisch_tradehub.tradehub_core.web.model;
+package com.fisch_tradehub.tradehub_core.entity;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -48,7 +60,7 @@ public class Bill {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
 
-    // Bill status: see BillStatus enum (PENDING_PAYMENT, PROCESSING, COMPLETED)
+    // 0 = pending, 1 = processing, 2 = completed
     @Column(nullable = false)
     @Convert(converter = BillStatusConverter.class)
     private BillStatus status;

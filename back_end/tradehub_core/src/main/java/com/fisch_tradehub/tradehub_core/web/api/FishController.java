@@ -1,8 +1,7 @@
 package com.fisch_tradehub.tradehub_core.web.api;
 
-import java.util.List;
-
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,6 @@ import com.fisch_tradehub.tradehub_core.web.dto.FishDTO;
 import com.fisch_tradehub.tradehub_core.web.dto.FishRequest;
 
 import jakarta.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController

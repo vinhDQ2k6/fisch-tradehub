@@ -1,29 +1,24 @@
-package com.fisch_tradehub.tradehub_core.web.model;
+package com.fisch_tradehub.tradehub_core.entity;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
-/**
- * Entity mapping for table `bill_info`
- *
- * CREATE TABLE `bill_info` (
- *   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- *   `bill_id` BIGINT UNSIGNED NOT NULL,
- *   `fish_id` BIGINT UNSIGNED NOT NULL,
- *   `price` DECIMAL(10, 2) NOT NULL,
- *   `amount` INT NOT NULL,
- *   `sum` DECIMAL(10, 2) NOT NULL,
- *   CONSTRAINT `bill_info_bill_fk` FOREIGN KEY (`bill_id`) REFERENCES `bill` (`id`),
- *   CONSTRAINT `bill_info_fish_fk` FOREIGN KEY (`fish_id`) REFERENCES `fish` (`id`),
- *   KEY `bill_info_bill_idx` (`bill_id`),
- *   UNIQUE KEY `bill_info_bill_fish_unique` (`bill_id`, `fish_id`)
- * );
- */
 @Entity
 @Table(
     name = "bill_info",

@@ -32,9 +32,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Tắt CSRF để test API dễ dàng hơn (vì đây là dự án học tập)
+                // Nếu muốn bật lại, cần cấu hình frontend gửi header X-XSRF-TOKEN
+                // .csrf(csrf -> csrf.disable())
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/auth/**"))
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .ignoringRequestMatchers("/api/auth/**"))
                 .cors(cors -> {
                     cors.configurationSource(corsConfig.corsConfigurationSource());
                 })

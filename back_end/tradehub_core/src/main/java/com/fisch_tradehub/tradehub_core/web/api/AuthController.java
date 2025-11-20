@@ -1,9 +1,7 @@
 package com.fisch_tradehub.tradehub_core.web.api;
 
 import java.net.URI;
-import java.util.List;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,7 +11,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -23,11 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fisch_tradehub.tradehub_core.dao.UserRepository;
+import com.fisch_tradehub.tradehub_core.service.AuthService;
 import com.fisch_tradehub.tradehub_core.web.dto.LoginRequest;
 import com.fisch_tradehub.tradehub_core.web.dto.RegisterRequest;
 import com.fisch_tradehub.tradehub_core.web.dto.UserDTO;
-import com.fisch_tradehub.tradehub_core.web.model.User;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,9 +36,8 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
     private final SecurityContextRepository securityContextRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
@@ -61,14 +56,7 @@ public class AuthController {
             SecurityContextHolder.setContext(context);
             securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
-            User user = userRepository.findByUsername(authentication.getName())
-                    .orElseThrow();
-
-            UserDTO dto = new UserDTO(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    List.of(user.getRole()));
+            UserDTO dto = authService.getUserDto(authentication.getName());
 
             return ResponseEntity.ok(dto);
         } catch (BadCredentialsException ex) {
@@ -78,40 +66,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        // 1. Kiểm tra trùng username/email
-        if (userRepository.findByUsername(request.username()).isPresent()) {
-            return ResponseEntity.status(409).body("Username already exists");
-        }
-        if (userRepository.findByEmail(request.email()).isPresent()) { // nếu bạn có findByEmail
-            return ResponseEntity.status(409).body("Email already exists");
-        }
-
-        // 2. Tạo user mới
-        User user = new User();
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password())); // BCrypt
-        user.setRole("USER"); // trong DB lưu "USER", UserDetailsService sẽ .roles("USER")
-                              // nếu bạn muốn mặc định ADMIN cho dev thì đổi "ADMIN"
-        user.setActive(true); // hoặc setEnabled(true) tùy field của bạn
-
         try {
-            user = userRepository.save(user);
-        } catch (DataIntegrityViolationException ex) {
-            // fallback nếu DB có unique constraint mà chưa check phía trên
-            return ResponseEntity.status(409).body("User already exists");
+            UserDTO dto = authService.register(request);
+            return ResponseEntity
+                    .created(URI.create("/api/auth/users/" + dto.id()))
+                    .body(dto);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(409).body(ex.getMessage());
         }
-
-        UserDTO dto = new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                List.of(user.getRole()));
-
-        // 201 Created + location optional
-        return ResponseEntity
-                .created(URI.create("/api/auth/users/" + user.getId()))
-                .body(dto);
     }
 
     // Dùng để Vue check xem đang login hay không
@@ -120,17 +82,7 @@ public class AuthController {
         if (principal == null) {
             return ResponseEntity.status(401).body("Unauthenticated");
         }
-
-        User user = userRepository.findByUsername(principal.getUsername())
-                .orElseThrow(); // nếu đến đây thì gần như chắc chắn tồn tại
-
-        UserDTO dto = new UserDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                List.of(user.getRole()));
-
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(authService.getUserDto(principal.getUsername()));
     }
 
     // Hủy session hiện tại + cookie JSESSIONID

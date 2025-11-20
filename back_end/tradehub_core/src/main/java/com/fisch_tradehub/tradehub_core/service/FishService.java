@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.fisch_tradehub.tradehub_core.dao.FishRepository;
+import com.fisch_tradehub.tradehub_core.entity.Fish;
+import com.fisch_tradehub.tradehub_core.repository.FishRepository;
 import com.fisch_tradehub.tradehub_core.web.dto.FishDTO;
 import com.fisch_tradehub.tradehub_core.web.dto.FishRequest;
-import com.fisch_tradehub.tradehub_core.web.model.Fish;
 
 @Service
 @Transactional(readOnly = true)
