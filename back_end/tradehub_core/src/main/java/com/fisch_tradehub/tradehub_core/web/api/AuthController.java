@@ -4,7 +4,6 @@ import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,37 +42,29 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        try {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    request.username(),
-                    request.password());
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                request.username(),
+                request.password());
 
-            Authentication authentication = authenticationManager.authenticate(authToken);
+        Authentication authentication = authenticationManager.authenticate(authToken);
 
-            // Tạo và lưu SecurityContext -> sinh session + cookie JSESSIONID
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(authentication);
-            SecurityContextHolder.setContext(context);
-            securityContextRepository.saveContext(context, httpRequest, httpResponse);
+        // Tạo và lưu SecurityContext -> sinh session + cookie JSESSIONID
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+        securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
-            UserDTO dto = authService.getUserDto(authentication.getName());
+        UserDTO dto = authService.getUserDto(authentication.getName());
 
-            return ResponseEntity.ok(dto);
-        } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401).body("Invalid username or password");
-        }
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            UserDTO dto = authService.register(request);
-            return ResponseEntity
-                    .created(URI.create("/api/auth/users/" + dto.id()))
-                    .body(dto);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(409).body(ex.getMessage());
-        }
+        UserDTO dto = authService.register(request);
+        return ResponseEntity
+                .created(URI.create("/api/auth/users/" + dto.id()))
+                .body(dto);
     }
 
     // Dùng để Vue check xem đang login hay không

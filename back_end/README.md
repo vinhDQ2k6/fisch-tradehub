@@ -1,16 +1,12 @@
-# Backend Guideline – Hệ thống Fish Shop (Spring Boot + Security + REST + Vue)
+# Backend Overview – Fish Shop System (Spring Boot + Security + REST + Vue)
 
-> Mục tiêu: mô tả rõ **mô hình dữ liệu**, **luồng nghiệp vụ**, **cách tiếp cận lập trình chuẩn**, và **các quyết định kiến trúc** sao cho:
->
-> - Dễ hiểu, dễ debug, dễ refactor.
-> - Không over-engineer, giữ mọi thứ “thẳng” và rõ.
-> - Vẫn sẵn sàng mở rộng mà không cần đập lại nền tảng (schema + kiến trúc).
+This document provides a comprehensive overview of the backend architecture, data model, business logic, and coding standards for the Fish Shop system.
 
 ---
 
-## 1. Tổng quan hệ thống
+## 1. System Overview
 
-### 1.1. Bối cảnh
+### 1.1. Context
 
 - Dự án học tập dùng:
   - Backend: Java Spring Boot, Spring Security, Spring Data JPA.
