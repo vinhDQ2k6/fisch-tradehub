@@ -27,7 +27,7 @@ This document provides a comprehensive overview of the backend architecture, dat
 
 2. **Security tập trung ở tầng backend**:
 
-   - Spring Security quyết định quyền (role), không tin trust frontend.
+   - Spring Security quyết định quyền (role), không tin tưởng frontend.
    - REST API rõ ràng về public / protected endpoints.
 
 3. **Khả năng mở rộng mà không đổi nền tảng**:
