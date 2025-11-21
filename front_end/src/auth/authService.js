@@ -1,5 +1,15 @@
 import { apiFetch } from "./fetchClient";
+import { API_ENDPOINTS } from "@/common/constants";
 
+/**
+ * Authenticate user with credentials.
+ * @param {Object} credentials - Login credentials
+ * @param {string} credentials.username - Username
+ * @param {string} credentials.password - Password
+ * @param {boolean} [credentials.rememberMe=false] - Remember me option
+ * @returns {Promise<Object>} User data after successful login
+ * @throws {Object} Error with status, data, and message
+ */
 export async function login({ username, password, rememberMe }) {
     const form = new URLSearchParams();
     form.set("username", username);
@@ -11,7 +21,7 @@ export async function login({ username, password, rememberMe }) {
     const base = import.meta.env.VITE_API_BASE;
     if (!base) throw new Error("Missing: VITE_API_BASE");
     const trimmed = base.endsWith("/") ? base.slice(0, -1) : base;
-    const url = `${trimmed}/api/auth/login`;
+    const url = `${trimmed}${API_ENDPOINTS.AUTH.LOGIN}`;
 
     const res = await fetch(url, {
         method: "POST",
@@ -20,7 +30,6 @@ export async function login({ username, password, rememberMe }) {
         credentials: "include",
     });
 
-    // On success, cookies are set; fetch user via /api/auth/me
     if (!res.ok) {
         const data = await res.json().catch(() => null);
         throw {
@@ -30,20 +39,37 @@ export async function login({ username, password, rememberMe }) {
         };
     }
 
-    // Immediately hydrate user from backend
-    const { data } = await currentUser(); // re-use your apiFetch-based currentUser
+    // Fetch user data after successful login
+    const { data } = await currentUser();
     return data;
 }
 
+/**
+ * Logout current user and clear session.
+ * @returns {Promise<Object>} Logout response
+ */
 export async function logout() {
-    return apiFetch("/api/auth/logout", { method: "POST" });
+    return apiFetch(API_ENDPOINTS.AUTH.LOGOUT, { method: "POST" });
 }
 
+/**
+ * Get current authenticated user information.
+ * @returns {Promise<Object>} Response with user data
+ * @throws {Object} Error if user not authenticated
+ */
 export async function currentUser() {
-    return apiFetch("/api/auth/me", { method: "GET", csrf: false });
+    return apiFetch(API_ENDPOINTS.AUTH.ME, { method: "GET", csrf: false });
 }
 
+/**
+ * Register a new user account.
+ * @param {Object} payload - Registration data
+ * @param {string} payload.username - Desired username
+ * @param {string} payload.email - Email address
+ * @param {string} payload.password - Password
+ * @returns {Promise<Object>} Response with created user data
+ * @throws {Object} Error if registration fails (e.g., username/email exists)
+ */
 export async function register(payload) {
-    // payload: { username, email, password, ... }
-    return apiFetch("/api/auth/register", { method: "POST", body: payload });
+    return apiFetch(API_ENDPOINTS.AUTH.REGISTER, { method: "POST", body: payload });
 }
