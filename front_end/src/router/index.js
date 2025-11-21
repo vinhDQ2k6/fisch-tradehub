@@ -40,7 +40,6 @@ const router = createRouter({
         // ============================================================
         {
             path: "/auth",
-            component: AppLayoutPublic,
             children: [
                 {
                     path: "login",
