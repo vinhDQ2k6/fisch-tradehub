@@ -5,6 +5,7 @@ A Spring Boot-based REST API for a fish shop trading system with authentication,
 ## Overview
 
 Fisch TradeHub is a learning project demonstrating professional backend architecture using:
+
 - **Java 17** with Spring Boot 3.5.7
 - **Spring Security** for authentication and authorization
 - **Spring Data JPA** with MySQL database
@@ -39,6 +40,7 @@ The backend follows a clean **layered architecture**:
 ## Domain Model
 
 The system manages:
+
 - **Users** with roles (USER, STAFF, ADMIN) and profiles
 - **Fish** (products) with rarity, price, and weight
 - **Cart** items for shopping
@@ -55,11 +57,13 @@ The system manages:
 ### Database Setup
 
 1. Create a MySQL database:
+
 ```sql
 CREATE DATABASE ftradehub;
 ```
 
 2. Update connection settings in `src/main/resources/application.properties`:
+
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/ftradehub
 spring.datasource.username=root
@@ -70,16 +74,19 @@ spring.datasource.password=root
 
 1. Clone the repository
 2. Navigate to the backend directory:
+
 ```bash
 cd back_end/tradehub_core
 ```
 
 3. Build the project:
+
 ```bash
 ./mvnw clean install
 ```
 
 4. Run the application:
+
 ```bash
 ./mvnw spring-boot:run
 ```
@@ -89,6 +96,7 @@ The API will be available at `http://localhost:8080`
 ### Database Migrations
 
 Flyway automatically runs migrations on startup. Migration files are in:
+
 ```
 src/main/resources/db/migration/
 ```
@@ -96,12 +104,14 @@ src/main/resources/db/migration/
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login and create session
 - `GET /api/auth/me` - Get current user
 - `POST /api/auth/logout` - Logout and clear session
 
 ### Fish Management
+
 - `GET /api/fish` - List all fish (public)
 - `GET /api/fish/{id}` - Get fish details
 - `POST /api/fish` - Create fish (admin only)
@@ -109,12 +119,14 @@ src/main/resources/db/migration/
 - `DELETE /api/fish/{id}` - Delete fish (admin only)
 
 ### Cart Operations
+
 - `GET /api/cart` - Get current user's cart
 - `POST /api/cart` - Add item to cart
 - `DELETE /api/cart/{fishId}` - Remove item from cart
 - `DELETE /api/cart` - Clear entire cart
 
 ### Order Management
+
 - `POST /api/bills/checkout` - Create order from cart
 - `GET /api/bills` - Get user's orders
 - `GET /api/bills/{id}` - Get order details
@@ -122,24 +134,30 @@ src/main/resources/db/migration/
 - `POST /api/bills/{id}/cancel` - Cancel pending order
 
 ### User Profile
+
 - `GET /api/user/info` - Get profile information
 - `PUT /api/user/info` - Update profile information
 
 ## Security
 
 ### Authentication
+
 Session-based authentication using Spring Security:
+
 - Login creates `JSESSIONID` cookie
 - Cookie sent with each request for authentication
 - Logout invalidates session and clears cookie
 
 ### Authorization
+
 Role-based access control:
+
 - **Public**: Fish listing, registration, login
 - **ADMIN**: Fish CRUD, all orders, user management
 - **USER**: Cart, orders, profile
 
 ### CORS Configuration
+
 Configured for Vue.js frontend at `http://localhost:5173`
 
 ## Code Structure
@@ -147,6 +165,7 @@ Configured for Vue.js frontend at `http://localhost:5173`
 ### Exception Handling
 
 Custom exceptions for better error semantics:
+
 - `ResourceNotFoundException` - Entity not found (404)
 - `DuplicateResourceException` - Duplicate entry (409)
 - `UnauthorizedAccessException` - Forbidden access (403)
@@ -157,6 +176,7 @@ All exceptions handled by `GlobalExceptionHandler` which returns appropriate HTT
 ### Constants
 
 Application-wide constants defined in `Constants.java`:
+
 - User roles
 - Error messages
 - Reusable strings
@@ -164,6 +184,7 @@ Application-wide constants defined in `Constants.java`:
 ### DTOs
 
 Data Transfer Objects for API requests/responses:
+
 - Decouple internal entities from API contracts
 - Validation annotations for input
 - Prevent exposing sensitive data
@@ -173,6 +194,7 @@ Data Transfer Objects for API requests/responses:
 ### Testing
 
 Run tests with:
+
 ```bash
 ./mvnw test
 ```
@@ -180,6 +202,7 @@ Run tests with:
 ### Code Style
 
 The project uses:
+
 - Lombok for reducing boilerplate
 - Constructor injection via `@RequiredArgsConstructor`
 - Javadoc on public methods
@@ -200,10 +223,10 @@ tradehub_core/
 │   │   │       ├── repository/     # Data access
 │   │   │       ├── security/       # Security config
 │   │   │       ├── service/        # Business logic
-│   │   │       └── web/           # Controllers & DTOs
+│   │   │       └── web/            # Controllers & DTOs
 │   │   └── resources/
 │   │       ├── application.properties
-│   │       └── db/migration/      # Flyway migrations
+│   │       └── db/migration/       # Flyway migrations
 │   └── test/
 └── pom.xml
 ```
@@ -211,6 +234,7 @@ tradehub_core/
 ## Contributing
 
 When contributing:
+
 1. Follow existing code style and structure
 2. Add Javadoc for public methods
 3. Use custom exceptions instead of generic `RuntimeException`

@@ -3,6 +3,7 @@
 This document provides detailed technical specifications for the Fisch TradeHub backend system, including data flow, component interactions, and implementation details.
 
 ## Table of Contents
+
 1. [System Architecture](#system-architecture)
 2. [Data Model](#data-model)
 3. [Component Specifications](#component-specifications)
@@ -41,19 +42,22 @@ The application follows a strict layered architecture with clear separation of c
 
 **Layer Responsibilities:**
 
-1. **Presentation Layer** (`web.api`): 
+1. **Presentation Layer** (`web.api`):
+
    - Handle HTTP requests/responses
    - Validate input via Bean Validation
    - Convert between DTOs and service calls
    - Apply security constraints
 
 2. **Business Logic Layer** (`service`):
+
    - Implement business rules
    - Manage transactions
    - Coordinate between repositories
    - Throw domain exceptions
 
 3. **Data Access Layer** (`repository`):
+
    - Interface with database
    - Provide CRUD operations
    - Custom queries
@@ -112,8 +116,10 @@ The application follows a strict layered architecture with clear separation of c
 ### Entity Specifications
 
 #### User
+
 **Purpose:** Authentication and authorization  
 **Key Features:**
+
 - Unique username and email
 - BCrypt hashed password
 - Single role per user (ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
@@ -121,52 +127,65 @@ The application follows a strict layered architecture with clear separation of c
 - Automatic timestamp management
 
 **Relationships:**
+
 - One-to-one with UserInfo
 - One-to-many with Cart
 - One-to-many with Bill (as buyer)
 
 #### UserInfo
+
 **Purpose:** Extended user profile information  
 **Key Features:**
+
 - Separated from authentication data
 - Optional fields (can be null)
 - Shares primary key with User
 
 #### Fish
+
 **Purpose:** Product catalog  
 **Key Features:**
+
 - Name and rarity classification
 - Decimal precision for monetary values
 - Weight tracking
 
 #### Cart
+
 **Purpose:** Shopping cart item  
 **Key Features:**
+
 - Unique constraint on (user_id, fish_id)
 - Quantity tracking
 - No price stored (retrieved from Fish)
 
 **Business Rules:**
+
 - One cart item per user per fish
 - Adding same fish updates quantity
 
 #### Bill
+
 **Purpose:** Order record  
 **Key Features:**
+
 - Immutable after creation
 - Status-based state machine
 - Optional seller (marketplace support)
 - Rating support
 
 **Status Values:**
+
 - PENDING_PAYMENT (0)
 - PROCESSING (1)
 - CANCELLED (2)
 - COMPLETED (3)
 
 #### BillInfo
+
 **Purpose:** Order line item  
 **Key Features:**
+
 - Snapshot of fish price at purchase time
 - Calculated sum field
 - Unique constraint on (bill_id, fish_id)
@@ -178,13 +197,17 @@ The application follows a strict layered architecture with clear separation of c
 ### Service Layer
 
 #### AuthService
+
 **Responsibilities:**
+
 - User registration with password hashing
 - User lookup for authentication
 - DTO conversion
 
 **Key Methods:**
+
 - `register(RegisterRequest)` - Create new user account
+
   - Validates username/email uniqueness
   - Hashes password with BCrypt
   - Assigns default USER role
@@ -196,13 +219,17 @@ The application follows a strict layered architecture with clear separation of c
   - Throws ResourceNotFoundException if not found
 
 #### BillService
+
 **Responsibilities:**
+
 - Order creation from cart
 - Order management
 - Payment processing
 
 **Key Methods:**
+
 - `checkout(String username)` - Create order
+
   - Transaction-managed
   - Calculates total from cart items
   - Creates Bill and BillInfo records
@@ -210,6 +237,7 @@ The application follows a strict layered architecture with clear separation of c
   - Throws BusinessException if cart empty
 
 - `payBill(Long billId, String username)` - Process payment
+
   - Validates ownership
   - Checks status (must be PENDING_PAYMENT)
   - Updates status to PROCESSING
@@ -221,17 +249,22 @@ The application follows a strict layered architecture with clear separation of c
   - Updates status to CANCELLED
 
 #### CartService
+
 **Responsibilities:**
+
 - Shopping cart management
 - Item quantity updates
 
 **Key Methods:**
+
 - `addToCart(String username, AddToCartRequest)` - Add/update item
+
   - Finds or creates cart item
   - Adds to existing quantity
   - Saves to database
 
 - `removeFromCart(String username, Long fishId)` - Remove item
+
   - Deletes cart item if exists
   - Silent if item not found
 
@@ -239,11 +272,14 @@ The application follows a strict layered architecture with clear separation of c
   - Deletes all user's cart items
 
 #### FishService
+
 **Responsibilities:**
+
 - Product catalog management
 - CRUD operations
 
 **Key Methods:**
+
 - `findAll()` - List all fish, sorted by name
 - `findById(Long id)` - Get fish details
 - `create(FishRequest)` - Add new fish (admin)
@@ -251,10 +287,13 @@ The application follows a strict layered architecture with clear separation of c
 - `delete(Long id)` - Remove fish (admin)
 
 #### UserInfoService
+
 **Responsibilities:**
+
 - User profile management
 
 **Key Methods:**
+
 - `getUserInfo(String username)` - Get profile
   - Returns null if not set
 - `updateUserInfo(String username, UserInfoDTO)` - Update profile
@@ -331,7 +370,7 @@ The application follows a strict layered architecture with clear separation of c
    │   │   └─ sum = price × amount
    │   └─ Save BillInfo
    ├─ Delete all cart items
-   └─ Return BillDTO with items
+   ├─ Return BillDTO with items
    │
 4. Transaction commits (all or nothing)
 5. Return 200 OK with bill details
@@ -355,7 +394,7 @@ The application follows a strict layered architecture with clear separation of c
    │   ├─ If exists: quantity += request.quantity
    │   └─ If not exists: create new with quantity
    ├─ Save Cart item
-   └─ Return
+   ├─ Return
    │
 4. Return 200 OK
 ```
@@ -369,6 +408,7 @@ The application follows a strict layered architecture with clear separation of c
 **Type:** Session-based (HTTP Session + Cookie)
 
 **Flow:**
+
 1. User logs in with credentials
 2. Spring Security validates against database
 3. Creates SecurityContext with Authentication
@@ -378,6 +418,7 @@ The application follows a strict layered architecture with clear separation of c
 7. SecurityContextRepository loads context from session
 
 **Configuration:**
+
 - Password encoding: BCrypt (strength 10)
 - Session management: HTTP Session
 - Cookie name: JSESSIONID
@@ -386,6 +427,7 @@ The application follows a strict layered architecture with clear separation of c
 ### Authorization Rules
 
 **Endpoint Security:**
+
 ```java
 /api/auth/**           → permitAll()
 /api/admin/**          → hasRole('ADMIN')
@@ -397,6 +439,7 @@ The application follows a strict layered architecture with clear separation of c
 ```
 
 **Method-Level Security:**
+
 - Services check ownership in business logic
 - Example: BillService verifies user owns bill before operations
 
@@ -404,7 +447,7 @@ The application follows a strict layered architecture with clear separation of c
 
 **Allowed Origins:** `http://localhost:5173`  
 **Allowed Methods:** GET, POST, PUT, DELETE, OPTIONS  
-**Allowed Headers:** * (all)  
+**Allowed Headers:** \* (all)  
 **Expose Headers:** Authorization  
 **Credentials:** true (cookies allowed)
 
@@ -434,6 +477,7 @@ RuntimeException
 **Class:** `GlobalExceptionHandler` (@RestControllerAdvice)
 
 **Mappings:**
+
 - `BadCredentialsException` → 401 Unauthorized
 - `ResourceNotFoundException` → 404 Not Found
 - `UnauthorizedAccessException` → 403 Forbidden
@@ -444,12 +488,14 @@ RuntimeException
 - `Exception` → 500 Internal Server Error
 
 **Response Format:**
+
 - Simple string message for single errors
 - Map<String, String> for validation errors (field → message)
 
 ### Error Messages
 
 Standardized messages in `Constants.java`:
+
 - Clear and actionable
 - No sensitive information
 - Consistent language
@@ -460,6 +506,7 @@ Standardized messages in `Constants.java`:
 ## Transaction Management
 
 ### Strategy
+
 - **Read-only by default** (`@Transactional(readOnly = true)` on service classes)
 - **Write operations** marked explicitly with `@Transactional`
 - **Isolation level:** Default (READ_COMMITTED)
@@ -468,12 +515,14 @@ Standardized messages in `Constants.java`:
 ### Critical Transactions
 
 **Checkout:**
+
 - Creates Bill
 - Creates multiple BillInfo records
 - Deletes Cart items
 - Must be atomic (all or nothing)
 
 **Add to Cart:**
+
 - Find or create Cart item
 - Update quantity
 - Simple, short transaction
@@ -483,16 +532,19 @@ Standardized messages in `Constants.java`:
 ## Performance Considerations
 
 ### Database
+
 - Indexes on foreign keys
 - Unique constraints enforce data integrity at DB level
 - Timestamp columns use DB defaults
 
 ### JPA
+
 - Lazy loading for relationships (default)
 - Eager loading only when necessary
 - DTO projections avoid entity conversion overhead
 
 ### Query Optimization
+
 - Repository methods use Spring Data JPA conventions
 - Custom queries only when needed
 - Sorting at database level
@@ -502,6 +554,7 @@ Standardized messages in `Constants.java`:
 ## Extensibility
 
 ### Adding New Entities
+
 1. Create entity class in `entity/`
 2. Create repository interface in `repository/`
 3. Create service class in `service/`
@@ -510,11 +563,13 @@ Standardized messages in `Constants.java`:
 6. Add Flyway migration
 
 ### Adding New Roles
+
 1. Add constant to `Constants.java`
 2. Update `SecurityConfig` authorization rules
 3. Update service layer permission checks
 
 ### Adding Business Rules
+
 - Implement in service layer
 - Throw appropriate custom exception
 - Document in service method Javadoc
@@ -524,16 +579,19 @@ Standardized messages in `Constants.java`:
 ## Deployment Considerations
 
 ### Environment Configuration
+
 - Database credentials via environment variables
 - Different profiles for dev/test/prod
 - Flyway validates schema on startup
 
 ### Health Checks
+
 - Spring Boot Actuator endpoints available
 - Database connectivity check
 - Application readiness probe
 
 ### Logging
+
 - SQL logging configurable via `spring.jpa.show-sql`
 - Service-level logging for business operations
 - Exception logging in GlobalExceptionHandler
@@ -543,6 +601,7 @@ Standardized messages in `Constants.java`:
 ## Future Enhancements
 
 **Potential Additions:**
+
 1. Multi-role support per user
 2. Payment gateway integration
 3. Inventory management
@@ -555,6 +614,7 @@ Standardized messages in `Constants.java`:
 10. Caching layer (Redis)
 
 **Migration Path:**
+
 - Current schema designed to accommodate extensions
 - Use of surrogate keys (ID) allows easy joins
 - Flyway supports versioned migrations

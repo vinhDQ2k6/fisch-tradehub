@@ -15,28 +15,28 @@ This guide explains how the frontend and backend integrate, ensuring smooth comm
 │                     Client Browser                      │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  Vue 3 Frontend (Port 5173)                            │
-│  ├─ Components (Views, Layouts)                        │
-│  ├─ Composables (useAuth, useCart)                     │
-│  ├─ Services (authService, fetchClient)                │
-│  └─ Constants (API_ENDPOINTS, ROLES)                   │
-│                         │                                │
+│  Vue 3 Frontend (Port 5173)                             │
+│  ├─ Components (Views, Layouts)                         │
+│  ├─ Composables (useAuth, useCart)                      │
+│  ├─ Services (authService, fetchClient)                 │
+│  └─ Constants (API_ENDPOINTS, ROLES)                    │
+│                         │                               │
 │                         │ HTTP/JSON + Cookies           │
-│                         ▼                                │
+│                         ▼                               │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  Spring Boot Backend (Port 8080)                       │
-│  ├─ Controllers (REST API)                             │
-│  ├─ Services (Business Logic)                          │
-│  ├─ Repositories (Data Access)                         │
-│  ├─ Security (Auth + Authorization)                    │
-│  └─ Constants (Error messages, Roles)                  │
-│                         │                                │
-│                         ▼                                │
+│  Spring Boot Backend (Port 8080)                        │
+│  ├─ Controllers (REST API)                              │
+│  ├─ Services (Business Logic)                           │
+│  ├─ Repositories (Data Access)                          │
+│  ├─ Security (Auth + Authorization)                     │
+│  └─ Constants (Error messages, Roles)                   │
+│                         │                               │
+│                         ▼                               │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  MySQL Database (Port 3306)                            │
-│  └─ Tables (user, fish, cart, bill, etc.)              │
+│  MySQL Database (Port 3306)                             │
+│  └─ Tables (user, fish, cart, bill, etc.)               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -47,15 +47,15 @@ This guide explains how the frontend and backend integrate, ensuring smooth comm
 
 Frontend constants directly map to backend routes:
 
-| Frontend Constant | Backend Controller Method |
-|-------------------|---------------------------|
-| `API_ENDPOINTS.AUTH.LOGIN` | `POST /api/auth/login` → `AuthController.login()` |
-| `API_ENDPOINTS.AUTH.REGISTER` | `POST /api/auth/register` → `AuthController.register()` |
-| `API_ENDPOINTS.AUTH.ME` | `GET /api/auth/me` → `AuthController.me()` |
-| `API_ENDPOINTS.CART.BASE` | `GET /api/cart` → `CartController.getCart()` |
-| `API_ENDPOINTS.CART.BASE` | `POST /api/cart` → `CartController.addToCart()` |
+| Frontend Constant              | Backend Controller Method                                |
+| ------------------------------ | -------------------------------------------------------- |
+| `API_ENDPOINTS.AUTH.LOGIN`     | `POST /api/auth/login` → `AuthController.login()`        |
+| `API_ENDPOINTS.AUTH.REGISTER`  | `POST /api/auth/register` → `AuthController.register()`  |
+| `API_ENDPOINTS.AUTH.ME`        | `GET /api/auth/me` → `AuthController.me()`               |
+| `API_ENDPOINTS.CART.BASE`      | `GET /api/cart` → `CartController.getCart()`             |
+| `API_ENDPOINTS.CART.BASE`      | `POST /api/cart` → `CartController.addToCart()`          |
 | `API_ENDPOINTS.BILLS.CHECKOUT` | `POST /api/bills/checkout` → `BillController.checkout()` |
-| `API_ENDPOINTS.FISH.BASE` | `GET /api/fish` → `FishController.getAllFish()` |
+| `API_ENDPOINTS.FISH.BASE`      | `GET /api/fish` → `FishController.getAllFish()`          |
 
 ### Request/Response Flow
 
@@ -105,7 +105,7 @@ Frontend                           Backend
    │
    ├─ useCart().addItem(fish)
    │  POST /api/cart
-   │  Headers: 
+   │  Headers:
    │    Cookie: JSESSIONID=...
    │    Content-Type: application/json
    │    X-XSRF-TOKEN: <token>
@@ -149,7 +149,7 @@ Frontend                           Backend
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Session-Based Auth                    │
+│                    Session-Based Auth                   │
 └─────────────────────────────────────────────────────────┘
 
 Frontend Login
@@ -178,7 +178,7 @@ Controllers access via @AuthenticationPrincipal
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    CSRF Token Flow                       │
+│                    CSRF Token Flow                      │
 └─────────────────────────────────────────────────────────┘
 
 Backend (Spring Security)
@@ -205,9 +205,9 @@ Request processed or rejected (403)
 // router/index.js
 {
   path: '/dashboard',
-  meta: { 
-    requiresAuth: true, 
-    roles: ['ADMIN'] 
+  meta: {
+    requiresAuth: true,
+    roles: ['ADMIN']
   }
 }
 
@@ -216,7 +216,7 @@ if (route.meta.requiresAuth) {
   if (!useAuth().isLoggedIn()) {
     return '/auth/login';
   }
-  
+
   if (route.meta.roles) {
     const user = useAuth().user.value;
     const hasRole = route.meta.roles.some(
@@ -251,41 +251,46 @@ if (!bill.getBuyer().getId().equals(user.getId())) {
 ### Role Names
 
 **Frontend:**
+
 ```javascript
 export const ROLES = {
-  USER: 'ROLE_USER',
-  STAFF: 'ROLE_STAFF',
-  ADMIN: 'ROLE_ADMIN',
+  USER: "ROLE_USER",
+  STAFF: "ROLE_STAFF",
+  ADMIN: "ROLE_ADMIN",
 };
 ```
 
 **Backend:**
+
 ```java
 public static final String ROLE_USER = "ROLE_USER";
 public static final String ROLE_STAFF = "ROLE_STAFF";
 public static final String ROLE_ADMIN = "ROLE_ADMIN";
 ```
 
-**Why identical:** Spring Security requires "ROLE_" prefix. Frontend must match exactly for role checks.
+**Why identical:** Spring Security requires "ROLE\_" prefix. Frontend must match exactly for role checks.
 
 ### Error Messages
 
 **Frontend:**
+
 ```javascript
 export const ERROR_MESSAGES = {
-  NOT_FOUND: 'Resource not found.',
-  ALREADY_EXISTS: 'Conflict: the resource already exists.',
+  NOT_FOUND: "Resource not found.",
+  ALREADY_EXISTS: "Conflict: the resource already exists.",
   PERMISSION_DENIED: "You don't have permission...",
 };
 ```
 
 **Backend:**
+
 ```java
 public static final String USER_NOT_FOUND = "User not found";
 public static final String USERNAME_EXISTS = "Username already exists";
 ```
 
 **Mapping via HTTP Status:**
+
 ```javascript
 // Frontend handleError.js
 case HTTP_STATUS.NOT_FOUND:
@@ -297,20 +302,26 @@ case HTTP_STATUS.CONFLICT:
 ### HTTP Status Codes
 
 **Backend Exceptions → HTTP Status:**
+
 - `ResourceNotFoundException` → 404
 - `DuplicateResourceException` → 409
 - `UnauthorizedAccessException` → 403
 - `BusinessException` → 400
 
 **Frontend Detection:**
+
 ```javascript
 // handleError.js
 function mapFriendlyMessage(err) {
   switch (err.status) {
-    case 404: return ERROR_MESSAGES.NOT_FOUND;
-    case 409: return ERROR_MESSAGES.ALREADY_EXISTS;
-    case 403: return ERROR_MESSAGES.PERMISSION_DENIED;
-    case 400: return ERROR_MESSAGES.VALIDATION_FAILED;
+    case 404:
+      return ERROR_MESSAGES.NOT_FOUND;
+    case 409:
+      return ERROR_MESSAGES.ALREADY_EXISTS;
+    case 403:
+      return ERROR_MESSAGES.PERMISSION_DENIED;
+    case 400:
+      return ERROR_MESSAGES.VALIDATION_FAILED;
   }
 }
 ```
@@ -320,6 +331,7 @@ function mapFriendlyMessage(err) {
 ### User Data Transfer
 
 **Backend DTO:**
+
 ```java
 public record UserDTO(
     Long id,
@@ -330,6 +342,7 @@ public record UserDTO(
 ```
 
 **Frontend Usage:**
+
 ```javascript
 // After login, useAuth().user contains:
 {
@@ -347,6 +360,7 @@ console.log(user.value.username); // "alice"
 ### Cart Item Mapping
 
 **Backend DTO:**
+
 ```java
 public record CartItemDTO(
     Long fishId,
@@ -359,6 +373,7 @@ public record CartItemDTO(
 ```
 
 **Frontend Transformation:**
+
 ```javascript
 // useCart.js
 items.value = data.map((item) => ({
@@ -374,6 +389,7 @@ items.value = data.map((item) => ({
 ### Bill (Order) Structure
 
 **Backend:**
+
 ```java
 public record BillDTO(
     Long id,
@@ -386,6 +402,7 @@ public record BillDTO(
 ```
 
 **Frontend Display:**
+
 ```vue
 <template>
   <div v-for="bill in bills" :key="bill.id">
@@ -434,6 +451,7 @@ handleError.js
 ### Example: Duplicate Username
 
 **Backend:**
+
 ```java
 if (userRepository.findByUsername(request.username()).isPresent()) {
     throw new DuplicateResourceException(Constants.USERNAME_EXISTS);
@@ -442,6 +460,7 @@ if (userRepository.findByUsername(request.username()).isPresent()) {
 ```
 
 **Frontend:**
+
 ```javascript
 try {
   await authService.register({ username, email, password });
@@ -471,6 +490,7 @@ watch(user, (newUser) => {
 ```
 
 **Consistency:**
+
 - Frontend state mirrors backend
 - After each mutation, refetch to stay in sync
 - Logout clears frontend state
@@ -489,6 +509,7 @@ router.isReady().then(initAuth);
 ```
 
 **Flow:**
+
 1. Browser sends JSESSIONID with every request
 2. Backend validates session
 3. If valid, returns user data
@@ -541,6 +562,7 @@ router.isReady().then(initAuth);
 ### Integration Test Checklist
 
 **Authentication:**
+
 - [ ] Register with valid data → Success
 - [ ] Register with duplicate username → 409 Conflict
 - [ ] Login with valid credentials → Success + cookie
@@ -549,12 +571,14 @@ router.isReady().then(initAuth);
 - [ ] Logout → Session cleared, redirect to home
 
 **Authorization:**
+
 - [ ] User role can access user pages → Success
 - [ ] User role cannot access admin pages → 403 Forbidden
 - [ ] Admin role can access all pages → Success
 - [ ] Frontend route guard blocks unauthorized routes
 
 **Cart Operations:**
+
 - [ ] Add item when logged in → Success
 - [ ] Add item when not logged in → Error message
 - [ ] Remove item → Success, count updated
@@ -562,6 +586,7 @@ router.isReady().then(initAuth);
 - [ ] Cart persists across page refresh → Success
 
 **Error Handling:**
+
 - [ ] Network error → Friendly message displayed
 - [ ] 404 error → "Resource not found" displayed
 - [ ] 409 error → "Already exists" displayed
@@ -572,17 +597,20 @@ router.isReady().then(initAuth);
 ### Environment Configuration
 
 **Frontend (.env):**
+
 ```env
 VITE_API_BASE=http://localhost:8080
 ```
 
 **Backend (application.properties):**
+
 ```properties
 # CORS must allow frontend origin
 cors.allowed-origins=http://localhost:5173
 ```
 
 **Production:**
+
 ```env
 # Frontend
 VITE_API_BASE=https://api.fishtradehub.com
@@ -594,6 +622,7 @@ cors.allowed-origins=https://fishtradehub.com
 ### Deployment Checklist
 
 **Backend:**
+
 - [ ] MySQL database accessible
 - [ ] Flyway migrations run
 - [ ] CORS configured for frontend origin
@@ -602,6 +631,7 @@ cors.allowed-origins=https://fishtradehub.com
 - [ ] Environment variables set
 
 **Frontend:**
+
 - [ ] Built with production API URL
 - [ ] Hosted with SPA routing support (redirect to index.html)
 - [ ] HTTPS enabled
@@ -609,6 +639,7 @@ cors.allowed-origins=https://fishtradehub.com
 - [ ] Cookies sent with credentials: 'include'
 
 **Integration:**
+
 - [ ] Frontend can call backend API
 - [ ] Login works and sets cookie
 - [ ] Authenticated requests succeed
@@ -620,45 +651,53 @@ cors.allowed-origins=https://fishtradehub.com
 ### Common Integration Issues
 
 **Issue: CORS Error**
+
 ```
-Access to fetch at 'http://localhost:8080/api/auth/login' 
+Access to fetch at 'http://localhost:8080/api/auth/login'
 from origin 'http://localhost:5173' has been blocked by CORS policy
 ```
 
 **Solution:**
+
 - Check backend `SecurityConfig.java` CORS configuration
 - Verify `cors.allowed-origins` matches frontend URL
 - Ensure `credentials: 'include'` in fetchClient
 - Check `Access-Control-Allow-Credentials: true` header
 
 **Issue: Session Not Persisting**
+
 ```
 User logs in successfully but appears logged out on refresh
 ```
 
 **Solution:**
+
 - Check `credentials: 'include'` in all fetchClient calls
 - Verify backend sets `HttpOnly` cookie
 - Check browser doesn't block third-party cookies
 - Ensure same domain/subdomain for dev (use `localhost` for both)
 
 **Issue: CSRF Token Missing**
+
 ```
 403 Forbidden on POST/PUT/DELETE requests
 ```
 
 **Solution:**
+
 - Check CSRF token cookie is set: `XSRF-TOKEN`
 - Verify `csrf.js` reads token correctly
 - Ensure `fetchClient.js` adds `X-XSRF-TOKEN` header
 - Check backend CSRF configuration enabled
 
 **Issue: Role Check Fails**
+
 ```
 User has ADMIN role but route guard denies access
 ```
 
 **Solution:**
+
 - Verify role name matches exactly: `ROLE_ADMIN`
 - Check `user.roles` array contains role
 - Ensure backend returns roles in `UserDTO`
@@ -669,18 +708,21 @@ User has ADMIN role but route guard denies access
 ### Optimization Points
 
 **Backend:**
+
 - JPA lazy loading (don't over-eager fetch)
 - Database indexes on FKs
 - Transaction boundaries correct
 - DTO projection (don't expose entities)
 
 **Frontend:**
+
 - Route-level code splitting (already done)
 - API response caching in composables
 - Debounce user inputs
 - Virtual scrolling for long lists
 
 **Network:**
+
 - Minimize API calls (batch when possible)
 - Use HTTP caching headers
 - Compress responses (gzip)
@@ -696,12 +738,13 @@ This integration guide demonstrates:
 ✅ **Secure authentication** (session + CSRF)  
 ✅ **Type-safe data flow** (DTOs match frontend models)  
 ✅ **Complete test scenarios** for validation  
-✅ **Deployment readiness** with checklists  
+✅ **Deployment readiness** with checklists
 
 The architecture is **structured** (INTJ), **reliable** (ISTJ), and **production-ready**.
 
 ---
 
 For detailed specifications, see:
-- [Backend Specification](../back_end/SYSTEM_SPECIFICATION.md)
-- [Frontend Specification](FRONTEND_SPECIFICATION.md)
+
+- [Backend Specification](/back_end/SYSTEM_SPECIFICATION.md)
+- [Frontend Specification](/front_end/FRONTEND_SPECIFICATION.md)

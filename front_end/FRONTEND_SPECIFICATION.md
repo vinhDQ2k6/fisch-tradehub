@@ -343,7 +343,9 @@ ref/reactive → computed → template
 const items = ref([{ quantity: 1, price: 10 }]);
 
 // Computed (auto-updates)
-const totalValue = computed(() => items.value.reduce((sum, i) => sum + i.total, 0));
+const totalValue = computed(() =>
+  items.value.reduce((sum, i) => sum + i.total, 0),
+);
 
 // Template (auto-renders)
 <span>{{ totalValue }}</span>;
@@ -486,21 +488,21 @@ const selectedBill = ref(null);
 **Features:**
 
 1. **Automatic JSON Handling**
-    - Detects object body → stringify + set Content-Type
-    - Detects JSON response → parse automatically
+   - Detects object body → stringify + set Content-Type
+   - Detects JSON response → parse automatically
 
 2. **CSRF Protection**
-    - Reads token from cookie
-    - Adds X-XSRF-TOKEN header to mutations
-    - Skips for GET/HEAD
+   - Reads token from cookie
+   - Adds X-XSRF-TOKEN header to mutations
+   - Skips for GET/HEAD
 
 3. **Credential Inclusion**
-    - Always sends cookies (credentials: 'include')
-    - Required for session auth
+   - Always sends cookies (credentials: 'include')
+   - Required for session auth
 
 4. **Error Standardization**
-    - Throws structured object: `{ status, data, message }`
-    - Consistent error shape for handlers
+   - Throws structured object: `{ status, data, message }`
+   - Consistent error shape for handlers
 
 **Usage Patterns:**
 
@@ -510,21 +512,21 @@ const { data } = await apiFetch("/api/fish");
 
 // POST with body
 await apiFetch("/api/cart", {
-    method: "POST",
-    body: { fishId: 1, quantity: 2 },
+  method: "POST",
+  body: { fishId: 1, quantity: 2 },
 });
 
 // DELETE
 await apiFetch(`/api/cart/${fishId}`, {
-    method: "DELETE",
+  method: "DELETE",
 });
 
 // With error handling
 try {
-    await apiFetch("/api/endpoint");
+  await apiFetch("/api/endpoint");
 } catch (err) {
-    // err = { status: 404, data: {...}, message: "..." }
-    showError(toast, err);
+  // err = { status: 404, data: {...}, message: "..." }
+  showError(toast, err);
 }
 ```
 
@@ -543,25 +545,25 @@ try {
 
 ```javascript
 export const API_ENDPOINTS = {
-    AUTH: {
-        LOGIN: "/api/auth/login",
-        LOGOUT: "/api/auth/logout",
-        // ...
-    },
-    CART: {
-        BASE: "/api/cart",
-        BY_FISH: (fishId) => `/api/cart/${fishId}`,
-    },
+  AUTH: {
+    LOGIN: "/api/auth/login",
+    LOGOUT: "/api/auth/logout",
+    // ...
+  },
+  CART: {
+    BASE: "/api/cart",
+    BY_FISH: (fishId) => `/api/cart/${fishId}`,
+  },
 };
 
 export const ROLES = {
-    USER: "ROLE_USER",
-    ADMIN: "ROLE_ADMIN",
+  USER: "ROLE_USER",
+  ADMIN: "ROLE_ADMIN",
 };
 
 export const ERROR_MESSAGES = {
-    LOGIN_REQUIRED: "You must be logged in...",
-    // ...
+  LOGIN_REQUIRED: "You must be logged in...",
+  // ...
 };
 ```
 
@@ -574,14 +576,14 @@ export const ERROR_MESSAGES = {
 **handleError.js** provides consistent error handling:
 
 1. **HTTP Status → User Message**
-    - Maps status codes to friendly messages
-    - Handles network errors
-    - Extracts validation errors
+   - Maps status codes to friendly messages
+   - Handles network errors
+   - Extracts validation errors
 
 2. **Toast Notifications**
-    - Error: Red, 4s
-    - Success: Green, 3s
-    - Consistent placement and style
+   - Error: Red, 4s
+   - Success: Green, 3s
+   - Consistent placement and style
 
 3. **Usage Pattern**
 
@@ -589,14 +591,14 @@ export const ERROR_MESSAGES = {
 import { showError, showSuccess } from "@/auth/handleError";
 
 async function performAction() {
-    try {
-        await apiCall();
-        showSuccess(toast, SUCCESS_MESSAGES.ACTION_COMPLETE);
-    } catch (err) {
-        showError(toast, err);
-        // Optional custom message
-        // showError(toast, err, { message: 'Custom message' });
-    }
+  try {
+    await apiCall();
+    showSuccess(toast, SUCCESS_MESSAGES.ACTION_COMPLETE);
+  } catch (err) {
+    showError(toast, err);
+    // Optional custom message
+    // showError(toast, err, { message: 'Custom message' });
+  }
 }
 ```
 

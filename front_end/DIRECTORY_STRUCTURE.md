@@ -86,10 +86,12 @@ src/
 Routes are organized by access level and purpose:
 
 ### 1. Public Routes (`/`)
+
 - **Landing** (`/`) - Homepage
 - **Fishes** (`/fishes`) - Browse fish catalog
 
 ### 2. Authentication Routes (`/auth`)
+
 - **Login** (`/auth/login`) - User login
 - **Register** (`/auth/register`) - New user registration
 - **Profile** (`/auth/profile`) - User profile (requires auth)
@@ -97,27 +99,33 @@ Routes are organized by access level and purpose:
 - **Error** (`/auth/error`) - Error page
 
 ### 3. User Routes (`/my`)
+
 - **Orders** (`/my/orders`) - User's order history
 
 ### 4. Admin Routes (`/admin`)
+
 - **Dashboard** (`/admin/dashboard`) - Analytics & overview
 - **Bills** (`/admin/bills`) - Manage all orders
 
 ### 5. Utility Routes
+
 - **Not Found** (`/not-found`) - 404 error page
 - **Catch-all** (`/*`) - Redirects to not found
 
 ## File Naming Conventions
 
 ### Components
+
 - **PascalCase** for component files: `MyComponent.vue`
 - **Descriptive names**: `BestSellingWidget.vue`, `RecentSalesWidget.vue`
 
 ### JavaScript Files
+
 - **camelCase** for service files: `authService.js`, `fetchClient.js`
 - **Prefixed with "use"** for composables: `useAuth.js`, `useCart.js`
 
 ### Directories
+
 - **lowercase** with hyphens if needed
 - **Plural** for collections: `components/`, `views/`
 - **Singular** for single-purpose: `auth/`, `cart/`, `router/`
@@ -125,18 +133,23 @@ Routes are organized by access level and purpose:
 ## Module Organization Principles
 
 ### By Feature
+
 Core features have their own directories:
+
 - `auth/` - Everything authentication-related
 - `cart/` - Everything cart-related
 
 ### By Role
+
 Views are organized by access level:
+
 - `public/` - No authentication required
 - `user/` - User authentication required
 - `admin/` - Admin role required
 - `pages/auth/` - Authentication-related pages
 
 ### By Type
+
 - `components/` - Reusable UI components
 - `layout/` - Application layouts and navigation
 - `service/` - API services and data fetching
@@ -184,12 +197,14 @@ These files are kept for reference but are not part of the core application.
 ### Recent Changes
 
 **Route Reorganization:**
+
 - Changed `/debts` → `/my/orders` (clearer purpose)
 - Changed `/dashboard` → `/admin/dashboard` (explicit admin namespace)
 - Changed `/dashboard/bills` → `/admin/bills` (consistent admin namespace)
 - Changed `/pages/notfound` → `/not-found` (cleaner URL)
 
 **File Reorganization:**
+
 - Moved view files into organized subdirectories
 - Separated by access level (public, user, admin)
 - Authentication pages remain in `pages/auth/` for consistency

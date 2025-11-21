@@ -192,10 +192,10 @@ npm run lint
 import { showError, showSuccess } from "@/auth/handleError";
 
 try {
-    await apiCall();
-    showSuccess(toast, "Operation successful!");
+  await apiCall();
+  showSuccess(toast, "Operation successful!");
 } catch (err) {
-    showError(toast, err);
+  showError(toast, err);
 }
 ```
 
@@ -220,8 +220,8 @@ const { data } = await apiFetch("/api/fish");
 
 // POST request
 await apiFetch("/api/cart", {
-    method: "POST",
-    body: { fishId: 1, quantity: 2 },
+  method: "POST",
+  body: { fishId: 1, quantity: 2 },
 });
 ```
 
@@ -300,18 +300,18 @@ await apiFetch(API_ENDPOINTS.BILLS.BY_ID(123));
  * @returns {Object} Composable state and methods
  */
 export function useFeature() {
-    const state = ref(null);
+  const state = ref(null);
 
-    /**
-     * Method description.
-     * @param {string} param - Parameter description
-     * @returns {Promise<void>}
-     */
-    async function method(param) {
-        // Implementation
-    }
+  /**
+   * Method description.
+   * @param {string} param - Parameter description
+   * @returns {Promise<void>}
+   */
+  async function method(param) {
+    // Implementation
+  }
 
-    return { state, method };
+  return { state, method };
 }
 ```
 
@@ -321,10 +321,10 @@ Add to `common/constants.js`:
 
 ```javascript
 export const API_ENDPOINTS = {
-    NEW_FEATURE: {
-        BASE: "/api/feature",
-        BY_ID: (id) => `/api/feature/${id}`,
-    },
+  NEW_FEATURE: {
+    BASE: "/api/feature",
+    BY_ID: (id) => `/api/feature/${id}`,
+  },
 };
 ```
 

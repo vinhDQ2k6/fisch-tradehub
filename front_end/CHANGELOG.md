@@ -5,6 +5,7 @@ All notable changes to the Fisch TradeHub frontend in this PR are documented her
 ## [Frontend Refactoring] - 2025-11-21
 
 ### Overview
+
 This refactoring aligns the frontend with the backend's SOLID principles while respecting both INTJ 5w6 (clear, concise architecture) and ISTJ 6w5 (practical, reliable, security-focused) preferences.
 
 ---
@@ -16,6 +17,7 @@ This refactoring aligns the frontend with the backend's SOLID principles while r
 **Why:** Magic strings and hardcoded endpoints scattered throughout the codebase made maintenance difficult and error-prone. Similar to backend refactoring, centralization provides a single source of truth.
 
 **What changed:**
+
 - Created comprehensive constants file with:
   - API endpoints (organized by feature)
   - User roles (matching backend exactly)
@@ -27,6 +29,7 @@ This refactoring aligns the frontend with the backend's SOLID principles while r
   - Storage keys
 
 **Benefits:**
+
 - Type-safety through autocomplete
 - Refactoring safety (change once, update everywhere)
 - Consistency with backend (same role names)
@@ -36,15 +39,17 @@ This refactoring aligns the frontend with the backend's SOLID principles while r
 **Example:**
 
 **Before:**
+
 ```javascript
-await apiFetch('/api/cart');
+await apiFetch("/api/cart");
 await apiFetch(`/api/cart/${fishId}`);
-throw new Error('You must be logged in to add to cart');
+throw new Error("You must be logged in to add to cart");
 ```
 
 **After:**
+
 ```javascript
-import { API_ENDPOINTS, ERROR_MESSAGES } from '@/common/constants';
+import { API_ENDPOINTS, ERROR_MESSAGES } from "@/common/constants";
 
 await apiFetch(API_ENDPOINTS.CART.BASE);
 await apiFetch(API_ENDPOINTS.CART.BY_FISH(fishId));
@@ -52,6 +57,7 @@ throw new Error(ERROR_MESSAGES.LOGIN_REQUIRED);
 ```
 
 **Helper Functions:**
+
 - `hasRole(user, roles)` - Check user permissions
 - `isAdmin(user)` - Quick admin check
 - `isStaffOrAdmin(user)` - Staff or admin check
@@ -63,6 +69,7 @@ throw new Error(ERROR_MESSAGES.LOGIN_REQUIRED);
 **Why:** Service functions lacked documentation and used hardcoded URLs. External developers or future maintainers need clear documentation.
 
 **What changed:**
+
 - Added comprehensive JSDoc to all functions
 - Replaced hardcoded URLs with constants
 - Documented parameters, return values, and errors
@@ -71,13 +78,15 @@ throw new Error(ERROR_MESSAGES.LOGIN_REQUIRED);
 **Example:**
 
 **Before:**
+
 ```javascript
 export async function login({ username, password, rememberMe }) {
-    // ... implementation
+  // ... implementation
 }
 ```
 
 **After:**
+
 ```javascript
 /**
  * Authenticate user with credentials.
@@ -89,11 +98,12 @@ export async function login({ username, password, rememberMe }) {
  * @throws {Object} Error with status, data, and message
  */
 export async function login({ username, password, rememberMe }) {
-    // ... implementation using API_ENDPOINTS.AUTH.LOGIN
+  // ... implementation using API_ENDPOINTS.AUTH.LOGIN
 }
 ```
 
 **Benefits:**
+
 - Self-documenting code
 - IDE tooltip support
 - Clear contracts
@@ -106,18 +116,21 @@ export async function login({ username, password, rememberMe }) {
 **Why:** Composables are the core of Vue 3 architecture but lacked documentation explaining their purpose and usage patterns.
 
 **What changed:**
+
 - Added module-level JSDoc explaining singleton pattern
 - Documented each method with parameters and returns
 - Explained the reactive state lifecycle
 - Added usage examples in comments
 
 **Documentation includes:**
+
 - What the composable does
 - What properties/methods it exposes
 - How to use it correctly
 - When methods should be called
 
 **Benefits:**
+
 - Clear understanding of state management
 - Proper usage patterns documented
 - Easier onboarding for Vue developers
@@ -130,6 +143,7 @@ export async function login({ username, password, rememberMe }) {
 **Why:** Cart logic needed error handling improvements and better documentation of its reactive behavior.
 
 **What changed:**
+
 - Added comprehensive JSDoc
 - Improved error handling in `addItem()`
 - Now throws error with message instead of silent failure
@@ -138,36 +152,39 @@ export async function login({ username, password, rememberMe }) {
 - Documented reactive watch behavior
 
 **Before:**
+
 ```javascript
 const addItem = async (fish) => {
-    if (!isLoggedIn()) {
-        console.warn("User must be logged in to add to cart");
-        return; // Silent failure
-    }
-    // ...
+  if (!isLoggedIn()) {
+    console.warn("User must be logged in to add to cart");
+    return; // Silent failure
+  }
+  // ...
 };
 ```
 
 **After:**
+
 ```javascript
 /**
  * Add item to cart or update quantity if already exists.
- * 
+ *
  * @param {Object} fish - Fish item to add
  * @param {number} fish.id - Fish ID
  * @returns {Promise<void>}
  * @throws {Error} If user not logged in or operation fails
  */
 const addItem = async (fish) => {
-    if (!isLoggedIn()) {
-        console.warn(ERROR_MESSAGES.LOGIN_REQUIRED);
-        throw new Error(ERROR_MESSAGES.LOGIN_REQUIRED);
-    }
-    // ... using API_ENDPOINTS.CART.BASE
+  if (!isLoggedIn()) {
+    console.warn(ERROR_MESSAGES.LOGIN_REQUIRED);
+    throw new Error(ERROR_MESSAGES.LOGIN_REQUIRED);
+  }
+  // ... using API_ENDPOINTS.CART.BASE
 };
 ```
 
 **Benefits:**
+
 - Components can catch and handle errors
 - Consistent error messages
 - Better user feedback
@@ -180,6 +197,7 @@ const addItem = async (fish) => {
 **Why:** The HTTP client is foundational infrastructure that needs excellent documentation for proper usage.
 
 **What changed:**
+
 - Added module-level JSDoc explaining features
 - Documented helper functions
 - Added usage examples in JSDoc
@@ -187,12 +205,14 @@ const addItem = async (fish) => {
 - Clarified error shape
 
 **Documentation covers:**
+
 - What the client does automatically
 - How to use it correctly
 - What errors it throws
 - Examples for common cases
 
 **Benefits:**
+
 - Developers understand capabilities
 - Proper error handling
 - Reduced misuse
@@ -205,6 +225,7 @@ const addItem = async (fish) => {
 **Why:** Error handling is critical for user experience and needed to use centralized constants.
 
 **What changed:**
+
 - Uses `HTTP_STATUS` constants instead of magic numbers
 - Uses `ERROR_MESSAGES` constants
 - Uses `TOAST_DURATION` constants
@@ -213,6 +234,7 @@ const addItem = async (fish) => {
 - Added usage examples
 
 **Before:**
+
 ```javascript
 case 400:
     return "Invalid request. Please check your input.";
@@ -221,6 +243,7 @@ case 401:
 ```
 
 **After:**
+
 ```javascript
 case HTTP_STATUS.BAD_REQUEST:
     return ERROR_MESSAGES.VALIDATION_FAILED;
@@ -229,6 +252,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 ```
 
 **Benefits:**
+
 - Consistency with backend status codes
 - Centralized message management
 - Easy to update error messages
@@ -241,10 +265,12 @@ case HTTP_STATUS.UNAUTHORIZED:
 **Why:** The ESLint rule for component tag order was incorrectly configured, breaking the linter.
 
 **What changed:**
+
 - Added severity level to `vue/component-tags-order` rule
 - Changed from `[{ order: [...] }]` to `["warn", { order: [...] }]`
 
 **Benefits:**
+
 - Linter can run successfully
 - Consistent code style enforcement
 - Better developer experience
@@ -256,6 +282,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 **Why:** Project was missing .gitignore, potentially committing dependencies and build artifacts.
 
 **What changed:**
+
 - Added comprehensive .gitignore
 - Excludes `node_modules/`
 - Excludes `dist/` and build output
@@ -263,6 +290,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 - Excludes log files
 
 **Benefits:**
+
 - Cleaner repository
 - Faster git operations
 - No accidental dependency commits
@@ -277,6 +305,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 **Why:** New developers need clear guidance on project structure, setup, and development practices. The frontend had no documentation.
 
 **What it includes:**
+
 - Project overview and tech stack
 - Architecture explanation with file structure
 - Design patterns (Composition API, singletons)
@@ -288,6 +317,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 - Troubleshooting section
 
 **Sections:**
+
 1. **Overview** - Quick introduction
 2. **Architecture** - Structure and patterns
 3. **Getting Started** - Setup and run
@@ -302,6 +332,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 12. **Troubleshooting** - Common issues
 
 **Benefits:**
+
 - Self-service onboarding
 - Reduced questions to senior developers
 - Documented decisions
@@ -314,6 +345,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 **Why:** Technical deep-dive documentation was missing. Developers need to understand internal workings for debugging and extending features.
 
 **What it includes:**
+
 - Detailed architecture diagrams
 - State management explanation
 - Complete authentication flow diagrams
@@ -367,6 +399,7 @@ case HTTP_STATUS.UNAUTHORIZED:
    - Toast notification system
 
 **Benefits:**
+
 - Deep system understanding
 - Maintenance guide
 - Extension guidelines
@@ -380,6 +413,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 **Why:** Changes need documentation with rationale to understand project evolution and decision-making.
 
 **What it includes:**
+
 - All frontend changes
 - Rationale for each change
 - Before/after code examples
@@ -387,6 +421,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 - Integration with backend
 
 **Benefits:**
+
 - Historical record
 - Explains "why" not just "what"
 - Knowledge preservation
@@ -399,6 +434,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 ### For INTJ 5w6 (Clear, Concise, Structured)
 
 **Applied:**
+
 - ✅ Constants eliminate ambiguity
 - ✅ JSDoc provides clarity without verbosity
 - ✅ Composables are concise, single-purpose
@@ -406,6 +442,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 - ✅ Minimal complexity with maximum meaning
 
 **Example:**
+
 ```javascript
 // Clear, type-documented function
 /**
@@ -419,6 +456,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 ### For ISTJ 6w5 (Practical, Reliable, Detailed)
 
 **Applied:**
+
 - ✅ Error handling is thorough and predictable
 - ✅ Security considerations documented
 - ✅ Practical examples in documentation
@@ -427,6 +465,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 - ✅ Testing guidance included
 
 **Example:**
+
 - Comprehensive error messages
 - Detailed troubleshooting sections
 - Security best practices documented
@@ -439,6 +478,7 @@ case HTTP_STATUS.UNAUTHORIZED:
 ### API Contract Alignment
 
 **Consistency:**
+
 - ✅ Roles match exactly (ROLE_USER, ROLE_ADMIN, ROLE_STAFF)
 - ✅ Endpoints match backend routes
 - ✅ Error status codes align
@@ -446,31 +486,33 @@ case HTTP_STATUS.UNAUTHORIZED:
 
 **Constants Mapping:**
 
-| Frontend | Backend |
-|----------|---------|
-| `ROLES.USER` | `Constants.ROLE_USER` |
-| `ROLES.ADMIN` | `Constants.ROLE_ADMIN` |
+| Frontend                   | Backend                           |
+| -------------------------- | --------------------------------- |
+| `ROLES.USER`               | `Constants.ROLE_USER`             |
+| `ROLES.ADMIN`              | `Constants.ROLE_ADMIN`            |
 | `API_ENDPOINTS.AUTH.LOGIN` | `@PostMapping("/api/auth/login")` |
-| `HTTP_STATUS.NOT_FOUND` | `HttpStatus.NOT_FOUND (404)` |
+| `HTTP_STATUS.NOT_FOUND`    | `HttpStatus.NOT_FOUND (404)`      |
 
 ### Error Handling Parity
 
 **Backend exceptions → Frontend handling:**
+
 - `ResourceNotFoundException` → 404 → "Resource not found"
 - `DuplicateResourceException` → 409 → "Conflict: already exists"
 - `UnauthorizedAccessException` → 403 → "Permission denied"
 - `BusinessException` → 400 → "Validation failed"
 
 **Frontend maps these automatically:**
+
 ```javascript
 function mapFriendlyMessage(err) {
-    switch (err.status) {
-        case HTTP_STATUS.NOT_FOUND:
-            return ERROR_MESSAGES.NOT_FOUND;
-        case HTTP_STATUS.CONFLICT:
-            return ERROR_MESSAGES.ALREADY_EXISTS;
-        // ...
-    }
+  switch (err.status) {
+    case HTTP_STATUS.NOT_FOUND:
+      return ERROR_MESSAGES.NOT_FOUND;
+    case HTTP_STATUS.CONFLICT:
+      return ERROR_MESSAGES.ALREADY_EXISTS;
+    // ...
+  }
 }
 ```
 
@@ -479,16 +521,19 @@ function mapFriendlyMessage(err) {
 ## Code Quality Metrics
 
 ### Changes
+
 - **Files Modified:** 6 (services, composables, config)
 - **Files Added:** 5 (constants, docs, .gitignore)
 - **Lines Added:** ~700 (including documentation)
 - **Lines Modified:** ~100
 
 ### Documentation Coverage
+
 - **Before:** 0% (no JSDoc)
 - **After:** ~90% (all public functions)
 
 ### Constants
+
 - **Before:** ~20 magic strings scattered
 - **After:** All centralized in constants.js
 
@@ -502,7 +547,7 @@ function mapFriendlyMessage(err) {
 ✅ **Route URLs:** All paths identical  
 ✅ **Composable APIs:** Same methods and properties  
 ✅ **Build Process:** Same commands  
-✅ **Dependencies:** No version changes  
+✅ **Dependencies:** No version changes
 
 ### What Changed (Internal Only)
 
@@ -522,19 +567,21 @@ function mapFriendlyMessage(err) {
 **No action required** - refactoring is backward compatible. However, going forward:
 
 1. **Use constants** for all endpoints:
+
    ```javascript
    // ❌ Old way
-   await apiFetch('/api/cart');
-   
+   await apiFetch("/api/cart");
+
    // ✅ New way
    await apiFetch(API_ENDPOINTS.CART.BASE);
    ```
 
 2. **Use constants** for messages:
+
    ```javascript
    // ❌ Old way
-   showSuccess(toast, 'Item added to cart!');
-   
+   showSuccess(toast, "Item added to cart!");
+
    // ✅ New way
    showSuccess(toast, SUCCESS_MESSAGES.ITEM_ADDED);
    ```
@@ -551,6 +598,7 @@ function mapFriendlyMessage(err) {
 ### For Operations
 
 **No deployment changes:**
+
 - Same build process
 - Same environment variables
 - Same hosting requirements
@@ -561,6 +609,7 @@ function mapFriendlyMessage(err) {
 ## Benefits Summary
 
 ### For INTJ 5w6 Personality
+
 - ✅ Crystal clear architecture
 - ✅ Minimal complexity
 - ✅ Meaningful organization
@@ -568,6 +617,7 @@ function mapFriendlyMessage(err) {
 - ✅ Efficient patterns
 
 ### For ISTJ 6w5 Personality
+
 - ✅ Reliable and tested patterns
 - ✅ Security properly documented
 - ✅ Practical examples provided
@@ -575,6 +625,7 @@ function mapFriendlyMessage(err) {
 - ✅ Trustworthy error handling
 
 ### For Developers
+
 - ✅ Easier to understand codebase
 - ✅ Better IDE support
 - ✅ Faster debugging
@@ -582,6 +633,7 @@ function mapFriendlyMessage(err) {
 - ✅ Clear coding standards
 
 ### For the Project
+
 - ✅ Professional code quality
 - ✅ Maintainable architecture
 - ✅ Lower technical debt
@@ -626,6 +678,7 @@ function mapFriendlyMessage(err) {
 ### Frontend ↔ Backend Contract
 
 **Verified:**
+
 - ✅ Authentication endpoints match
 - ✅ Cart endpoints match
 - ✅ Bill endpoints match
@@ -634,6 +687,7 @@ function mapFriendlyMessage(err) {
 - ✅ Session management compatible
 
 **Test Cases:**
+
 1. Register → Login → Browse → Cart → Checkout ✅
 2. Role-based access control ✅
 3. Error handling consistency ✅

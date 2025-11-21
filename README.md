@@ -5,6 +5,7 @@ A professional full-stack fish shop trading system with clean architecture, comp
 ## Quick Start
 
 ### Backend
+
 ```bash
 cd back_end/tradehub_core
 ./mvnw spring-boot:run
@@ -12,6 +13,7 @@ cd back_end/tradehub_core
 ```
 
 ### Frontend
+
 ```bash
 cd front_end
 npm install
@@ -20,6 +22,7 @@ npm run dev
 ```
 
 ### Database
+
 ```bash
 mysql -u root -p
 CREATE DATABASE ftradehub;
@@ -29,12 +32,14 @@ CREATE DATABASE ftradehub;
 ## Architecture
 
 ### Full Stack
+
 ```
 Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
     Port 5173                  Port 8080            Port 3306
 ```
 
 ### Backend Stack
+
 - Java 17 + Spring Boot 3.5.7
 - Spring Security (session-based auth)
 - Spring Data JPA + MySQL
@@ -42,6 +47,7 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 - Lombok (reduce boilerplate)
 
 ### Frontend Stack
+
 - Vue 3.4 (Composition API)
 - PrimeVue 4.3 (UI components)
 - TailwindCSS 4.1 (styling)
@@ -51,27 +57,32 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 ## Documentation
 
 ### Backend
+
 - [README](back_end/README.md) - Setup and API reference
 - [System Specification](back_end/SYSTEM_SPECIFICATION.md) - Architecture and data flow
 - [Changelog](back_end/CHANGELOG.md) - Recent changes explained
 
 ### Frontend
+
 - [README](front_end/README.md) - Setup and component guide
 - [Frontend Specification](front_end/FRONTEND_SPECIFICATION.md) - State management and patterns
 - [Changelog](front_end/CHANGELOG.md) - Recent changes explained
 
 ### Integration
+
 - [Integration Guide](INTEGRATION_GUIDE.md) - Full-stack integration details
 
 ## Key Features
 
 ### Authentication & Authorization
+
 - Session-based authentication with cookies
 - Role-based access control (USER, STAFF, ADMIN)
 - CSRF protection
 - Secure password hashing (BCrypt)
 
 ### Shopping Experience
+
 - Browse fish catalog
 - Add to cart with quantity management
 - Checkout process creating orders
@@ -79,6 +90,7 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 - Real-time cart updates
 
 ### Admin Dashboard
+
 - Manage fish inventory
 - View all orders
 - Update order status
@@ -87,18 +99,21 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 ## Architecture Highlights
 
 ### Backend
+
 - **Layered Architecture:** Controller → Service → Repository → Entity
 - **Exception Hierarchy:** Typed exceptions with proper HTTP status codes
 - **Constants:** Centralized error messages and role definitions
 - **DTOs:** Clean separation between internal models and API contracts
 
 ### Frontend
+
 - **Composables Pattern:** Reactive state with singleton composables
 - **Constants Module:** API endpoints and messages centralized
 - **Error Handling:** Consistent user-friendly error display
 - **Route Guards:** Authentication and authorization checks
 
 ### Integration
+
 - **API Contracts:** Frontend constants map directly to backend endpoints
 - **Role Alignment:** Exact match between frontend and backend role names
 - **Error Mapping:** Backend HTTP status codes → Frontend user messages
@@ -107,6 +122,7 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 ## Code Quality
 
 ### Backend
+
 - ✅ Exception hierarchy (ResourceNotFoundException, BusinessException, etc.)
 - ✅ Constants class for reusable strings
 - ✅ Comprehensive Javadoc (~95% coverage)
@@ -114,6 +130,7 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 - ✅ GlobalExceptionHandler with proper mappings
 
 ### Frontend
+
 - ✅ Constants module with helper functions
 - ✅ JSDoc documentation (~90% coverage)
 - ✅ Composable pattern for state management
@@ -121,6 +138,7 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 - ✅ Type-safe constant usage
 
 ### Security
+
 - ✅ No vulnerabilities (CodeQL scan passed)
 - ✅ Session-based auth (HttpOnly cookies)
 - ✅ CSRF protection enabled
@@ -132,6 +150,7 @@ Vue 3 Frontend (Vite) ←→ Spring Boot Backend ←→ MySQL Database
 This project follows principles suited for:
 
 **INTJ 5w6 Preferences:**
+
 - Clear, concise code structure
 - Meaningful architecture with purpose
 - Logical organization
@@ -139,6 +158,7 @@ This project follows principles suited for:
 - Well-documented decisions
 
 **ISTJ 6w5 Preferences:**
+
 - Practical, proven patterns
 - Reliable error handling
 - Security-focused implementation
@@ -199,28 +219,33 @@ fisch-tradehub/
 ## Testing
 
 ### Backend
+
 ```bash
 cd back_end/tradehub_core
 ./mvnw test
 ```
 
 ### Frontend
+
 ```bash
 cd front_end
 npm run lint
 ```
 
 ### Integration
+
 Follow the test scenarios in [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)
 
 ## Deployment
 
 ### Backend
+
 1. Build: `./mvnw clean package`
 2. Run: `java -jar target/tradehub_core-0.0.1-SNAPSHOT.jar`
 3. Requires MySQL database
 
 ### Frontend
+
 1. Build: `npm run build`
 2. Deploy `dist/` folder to static hosting
 3. Set `VITE_API_BASE` environment variable
@@ -228,11 +253,13 @@ Follow the test scenarios in [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)
 ### Environment Variables
 
 **Frontend (.env):**
+
 ```env
 VITE_API_BASE=http://localhost:8080
 ```
 
 **Backend (application.properties):**
+
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/ftradehub
 spring.datasource.username=root
@@ -255,6 +282,7 @@ Educational project for learning purposes.
 ## Acknowledgments
 
 Built with modern best practices:
+
 - Spring Boot official guides
 - Vue 3 Composition API patterns
 - PrimeVue component library
