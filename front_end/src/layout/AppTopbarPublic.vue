@@ -49,7 +49,7 @@ const onCheckout = async () => {
             life: 3000,
         });
         cartPanel.value.hide();
-        router.push("/debts");
+        router.push("/my/orders");
     } catch (e) {
         toast.add({
             severity: "error",
@@ -317,7 +317,7 @@ function smoothScroll(id) {
                                             size="small"
                                             severity="secondary"
                                             as="router-link"
-                                            to="/debts"
+                                            to="/my/orders"
                                         />
                                         <Button
                                             icon="pi pi-trash"

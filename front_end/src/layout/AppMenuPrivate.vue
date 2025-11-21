@@ -7,7 +7,7 @@ const model = ref([
     {
         label: "Home",
         items: [
-            { label: "Dashboard", icon: "pi pi-fw pi-home", to: "/dashboard" },
+            { label: "Dashboard", icon: "pi pi-fw pi-home", to: "/admin/dashboard" },
         ],
     },
     {
@@ -16,7 +16,7 @@ const model = ref([
             {
                 label: "Bills Solver",
                 icon: "pi pi-fw pi-money-bill",
-                to: "/dashboard/bills",
+                to: "/admin/bills",
             },
         ],
     },
