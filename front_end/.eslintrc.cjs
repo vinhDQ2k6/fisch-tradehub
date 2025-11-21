@@ -18,6 +18,7 @@ module.exports = {
         "vue/multi-word-component-names": "off",
         "vue/no-reserved-component-names": "off",
         "vue/component-tags-order": [
+            "warn",
             { order: ["script", "template", "style"] },
         ],
         "prettier/prettier": ["error", { endOfLine: "auto" }],
