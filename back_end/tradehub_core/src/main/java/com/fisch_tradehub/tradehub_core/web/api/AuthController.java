@@ -29,6 +29,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * REST controller for authentication operations.
+ * Handles user registration, login, logout, and session management.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -38,6 +42,14 @@ public class AuthController {
     private final SecurityContextRepository securityContextRepository;
     private final AuthService authService;
 
+    /**
+     * Authenticate user and create session.
+     * 
+     * @param request login credentials
+     * @param httpRequest HTTP request
+     * @param httpResponse HTTP response
+     * @return authenticated user details
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
@@ -48,7 +60,7 @@ public class AuthController {
 
         Authentication authentication = authenticationManager.authenticate(authToken);
 
-        // Tạo và lưu SecurityContext -> sinh session + cookie JSESSIONID
+        // Create and save SecurityContext to generate session + JSESSIONID cookie
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
@@ -59,6 +71,12 @@ public class AuthController {
         return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Register a new user account.
+     * 
+     * @param request registration details
+     * @return created user details
+     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         UserDTO dto = authService.register(request);
@@ -67,7 +85,12 @@ public class AuthController {
                 .body(dto);
     }
 
-    // Dùng để Vue check xem đang login hay không
+    /**
+     * Get current authenticated user details.
+     * 
+     * @param principal authenticated user
+     * @return current user details or 401 if not authenticated
+     */
     @GetMapping("/me")
     public ResponseEntity<?> me(@AuthenticationPrincipal UserDetails principal) {
         if (principal == null) {
@@ -76,7 +99,14 @@ public class AuthController {
         return ResponseEntity.ok(authService.getUserDto(principal.getUsername()));
     }
 
-    // Hủy session hiện tại + cookie JSESSIONID
+    /**
+     * Logout and invalidate current session.
+     * 
+     * @param request HTTP request
+     * @param response HTTP response
+     * @param authentication current authentication
+     * @return success message
+     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request,
             HttpServletResponse response,

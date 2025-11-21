@@ -7,11 +7,15 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisch_tradehub.tradehub_core.common.Constants;
 import com.fisch_tradehub.tradehub_core.entity.Bill;
 import com.fisch_tradehub.tradehub_core.entity.BillInfo;
 import com.fisch_tradehub.tradehub_core.entity.BillStatus;
 import com.fisch_tradehub.tradehub_core.entity.Cart;
 import com.fisch_tradehub.tradehub_core.entity.User;
+import com.fisch_tradehub.tradehub_core.exception.BusinessException;
+import com.fisch_tradehub.tradehub_core.exception.ResourceNotFoundException;
+import com.fisch_tradehub.tradehub_core.exception.UnauthorizedAccessException;
 import com.fisch_tradehub.tradehub_core.repository.BillInfoRepository;
 import com.fisch_tradehub.tradehub_core.repository.BillRepository;
 import com.fisch_tradehub.tradehub_core.repository.CartRepository;
@@ -21,6 +25,9 @@ import com.fisch_tradehub.tradehub_core.web.dto.BillInfoDTO;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for managing bills (orders) and checkout operations.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,14 +38,22 @@ public class BillService {
         private final CartRepository cartRepository;
         private final UserRepository userRepository;
 
+        /**
+         * Create a bill from the user's cart items.
+         * 
+         * @param username the username of the buyer
+         * @return the created bill with items
+         * @throws ResourceNotFoundException if user not found
+         * @throws BusinessException if cart is empty
+         */
         @Transactional
         public BillDTO checkout(String username) {
                 User user = userRepository.findByUsername(username)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.USER_NOT_FOUND));
 
                 List<Cart> cartItems = cartRepository.findByUser(user);
                 if (cartItems.isEmpty()) {
-                        throw new RuntimeException("Cart is empty");
+                        throw new BusinessException(Constants.CART_EMPTY);
                 }
 
                 // Calculate total
@@ -72,18 +87,32 @@ public class BillService {
                 return getBillById(bill.getId());
         }
 
+        /**
+         * Get all bills for a specific user.
+         * 
+         * @param username the username of the buyer
+         * @return list of bills
+         * @throws ResourceNotFoundException if user not found
+         */
         public List<BillDTO> getMyBills(String username) {
                 User user = userRepository.findByUsername(username)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.USER_NOT_FOUND));
 
                 return billRepository.findByBuyer(user).stream()
                                 .map(this::toDto)
                                 .toList();
         }
 
+        /**
+         * Get a specific bill by ID with its items.
+         * 
+         * @param id the bill ID
+         * @return the bill details
+         * @throws ResourceNotFoundException if bill not found
+         */
         public BillDTO getBillById(Long id) {
                 Bill bill = billRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Bill not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.BILL_NOT_FOUND));
                 return toDto(bill);
         }
 
@@ -107,20 +136,30 @@ public class BillService {
                                 itemDtos);
         }
 
+        /**
+         * Process payment for a pending bill.
+         * 
+         * @param billId the bill ID
+         * @param username the username of the requester
+         * @return the updated bill
+         * @throws ResourceNotFoundException if user or bill not found
+         * @throws UnauthorizedAccessException if user doesn't own the bill
+         * @throws BusinessException if bill is not in pending status
+         */
         @Transactional
         public BillDTO payBill(Long billId, String username) {
                 User user = userRepository.findByUsername(username)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.USER_NOT_FOUND));
 
                 Bill bill = billRepository.findById(billId)
-                                .orElseThrow(() -> new RuntimeException("Bill not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.BILL_NOT_FOUND));
 
                 if (!bill.getBuyer().getId().equals(user.getId())) {
-                        throw new RuntimeException("Unauthorized access to bill");
+                        throw new UnauthorizedAccessException(Constants.UNAUTHORIZED_BILL_ACCESS);
                 }
 
                 if (bill.getStatus() != BillStatus.PENDING_PAYMENT) {
-                        throw new RuntimeException("Bill is not in pending payment status");
+                        throw new BusinessException(Constants.BILL_NOT_PENDING);
                 }
 
                 bill.setStatus(BillStatus.PROCESSING);
@@ -129,20 +168,30 @@ public class BillService {
                 return toDto(bill);
         }
 
+        /**
+         * Cancel a pending bill.
+         * 
+         * @param billId the bill ID
+         * @param username the username of the requester
+         * @return the updated bill
+         * @throws ResourceNotFoundException if user or bill not found
+         * @throws UnauthorizedAccessException if user doesn't own the bill
+         * @throws BusinessException if bill cannot be cancelled
+         */
         @Transactional
         public BillDTO cancelBill(Long billId, String username) {
                 User user = userRepository.findByUsername(username)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.USER_NOT_FOUND));
 
                 Bill bill = billRepository.findById(billId)
-                                .orElseThrow(() -> new RuntimeException("Bill not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.BILL_NOT_FOUND));
 
                 if (!bill.getBuyer().getId().equals(user.getId())) {
-                        throw new RuntimeException("Unauthorized access to bill");
+                        throw new UnauthorizedAccessException(Constants.UNAUTHORIZED_BILL_ACCESS);
                 }
 
                 if (bill.getStatus() != BillStatus.PENDING_PAYMENT) {
-                        throw new RuntimeException("Only pending bills can be cancelled");
+                        throw new BusinessException(Constants.BILL_CANNOT_CANCEL);
                 }
 
                 bill.setStatus(BillStatus.CANCELLED);
@@ -151,16 +200,29 @@ public class BillService {
                 return toDto(bill);
         }
 
+        /**
+         * Get all bills in the system (admin function).
+         * 
+         * @return list of all bills
+         */
         public List<BillDTO> getAllBills() {
                 return billRepository.findAll().stream()
                                 .map(this::toDto)
                                 .toList();
         }
 
+        /**
+         * Update bill status (admin/staff function).
+         * 
+         * @param id the bill ID
+         * @param status the new status
+         * @return the updated bill
+         * @throws ResourceNotFoundException if bill not found
+         */
         @Transactional
         public BillDTO updateBillStatus(Long id, BillStatus status) {
                 Bill bill = billRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Bill not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException(Constants.BILL_NOT_FOUND));
 
                 bill.setStatus(status);
                 bill = billRepository.save(bill);
