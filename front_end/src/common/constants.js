@@ -106,17 +106,51 @@ export const VALIDATION = {
 
 // Route names (for programmatic navigation)
 export const ROUTE_NAMES = {
+    // Public routes
     LANDING: 'landing',
     FISHES: 'fishes',
-    DEBTS: 'debts',
-    DASHBOARD: 'dashboard',
-    BILLS: 'bills',
+    
+    // Auth routes
     LOGIN: 'login',
     REGISTER: 'register',
     PROFILE: 'profile',
     ACCESS_DENIED: 'accessDenied',
     ERROR: 'error',
+    
+    // User routes
+    MY_ORDERS: 'myOrders',
+    
+    // Admin routes
+    DASHBOARD: 'dashboard',
+    ADMIN_BILLS: 'adminBills',
+    
+    // Utility routes
     NOT_FOUND: 'notfound',
+};
+
+// Route paths (for URL construction)
+export const ROUTE_PATHS = {
+    // Public
+    HOME: '/',
+    FISHES: '/fishes',
+    
+    // Auth
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    PROFILE: '/auth/profile',
+    ACCESS_DENIED: '/auth/access',
+    ERROR: '/auth/error',
+    
+    // User
+    MY_ORDERS: '/my/orders',
+    
+    // Admin
+    ADMIN: '/admin',
+    DASHBOARD: '/admin/dashboard',
+    ADMIN_BILLS: '/admin/bills',
+    
+    // Utility
+    NOT_FOUND: '/not-found',
 };
 
 // Local storage keys

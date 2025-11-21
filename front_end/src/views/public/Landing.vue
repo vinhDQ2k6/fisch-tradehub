@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FooterWidget from "@/components/landing/FooterWidget.vue";
+import HeroWidget from "@/components/landing/HeroWidget.vue";
 </script>
 
 <template>
