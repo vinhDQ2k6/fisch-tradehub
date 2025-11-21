@@ -3,6 +3,7 @@
 Detailed technical specification for the Vue 3 frontend application, including architecture, state management, data flow, and component interactions.
 
 ## Table of Contents
+
 1. [Architecture Overview](#architecture-overview)
 2. [State Management](#state-management)
 3. [Authentication Flow](#authentication-flow)
@@ -18,16 +19,19 @@ Detailed technical specification for the Vue 3 frontend application, including a
 ### Technology Stack
 
 **Core:**
+
 - Vue 3.4.34 (Composition API)
 - Vue Router 4.4.0
 - Vite 5.3.1 (Build tool)
 
 **UI:**
+
 - PrimeVue 4.3.1 (Component library)
 - TailwindCSS 4.1.17 (Utility CSS)
 - PrimeIcons 7.0.0
 
 **Validation:**
+
 - Yup 1.7.1 (Schema validation)
 
 ### Application Architecture
@@ -37,25 +41,25 @@ Detailed technical specification for the Vue 3 frontend application, including a
 │          Browser / Client               │
 ├─────────────────────────────────────────┤
 │                                         │
-│  ┌───────────────────────────────────┐ │
-│  │        Vue Components             │ │
-│  │  (Views, Layouts, UI Elements)    │ │
-│  └──────────────┬────────────────────┘ │
+│  ┌───────────────────────────────────┐  │
+│  │        Vue Components             │  │
+│  │  (Views, Layouts, UI Elements)    │  │
+│  └──────────────┬────────────────────┘  │
 │                 │                       │
-│  ┌──────────────▼────────────────────┐ │
-│  │       Composables Layer           │ │
-│  │  (useAuth, useCart - State)       │ │
-│  └──────────────┬────────────────────┘ │
+│  ┌──────────────▼────────────────────┐  │
+│  │       Composables Layer           │  │
+│  │  (useAuth, useCart - State)       │  │
+│  └──────────────┬────────────────────┘  │
 │                 │                       │
-│  ┌──────────────▼────────────────────┐ │
-│  │       Service Layer               │ │
-│  │  (authService, fetchClient)       │ │
-│  └──────────────┬────────────────────┘ │
+│  ┌──────────────▼────────────────────┐  │
+│  │       Service Layer               │  │
+│  │  (authService, fetchClient)       │  │
+│  └──────────────┬────────────────────┘  │
 │                 │                       │
-│  ┌──────────────▼────────────────────┐ │
-│  │       HTTP Client                 │ │
-│  │  (fetch with CSRF, cookies)       │ │
-│  └──────────────┬────────────────────┘ │
+│  ┌──────────────▼────────────────────┐  │
+│  │       HTTP Client                 │  │
+│  │  (fetch with CSRF, cookies)       │  │
+│  └──────────────┬────────────────────┘  │
 │                 │                       │
 └─────────────────┼───────────────────────┘
                   │ HTTP/JSON
@@ -87,6 +91,7 @@ Detailed technical specification for the Vue 3 frontend application, including a
 **No centralized store** (Vuex/Pinia) - Using module-scoped singletons with Vue's reactivity.
 
 **Rationale:**
+
 - Simpler for small-medium apps
 - Less boilerplate
 - Direct imports
@@ -111,17 +116,20 @@ export function useAuth() {
 ```
 
 **State:**
+
 - `user` - Current user object (null if not logged in)
 - `loading` - Auth operation in progress
 - `ready` - Auth state initialized
 
 **Methods:**
+
 - `init()` - Fetch current user on app startup
 - `doLogin()` - Authenticate with credentials
 - `doLogout()` - Clear session and state
 - `isLoggedIn()` - Check authentication status
 
 **Lifecycle:**
+
 ```
 App Start → init() → Check session → Set user/ready
 Login → doLogin() → API call → Update user
@@ -137,24 +145,27 @@ const items = ref([]);
 
 export function useCart() {
   const { user, isLoggedIn } = useAuth();
-  
+
   watch(user, (newUser) => {
     if (newUser) fetchCart();
     else items.value = [];
   });
-  
+
   return { items, addItem, removeItem, ... };
 }
 ```
 
 **State:**
+
 - `items` - Array of cart items with calculated totals
 
 **Computed:**
+
 - `itemCount` - Total quantity
 - `totalValue` - Total price
 
 **Methods:**
+
 - `fetchCart()` - Load from backend
 - `addItem(fish)` - Add to cart
 - `removeItem(fishId)` - Remove from cart
@@ -162,6 +173,7 @@ export function useCart() {
 - `checkout()` - Create order
 
 **Lifecycle:**
+
 ```
 User logs in → Watch triggers → fetchCart()
 Add item → API call → fetchCart() → Update items
@@ -170,6 +182,7 @@ User logs out → Watch triggers → items cleared
 ```
 
 **Synchronization:**
+
 - Watches `useAuth().user` for login/logout
 - Refetches after mutations
 - Clears on logout
@@ -186,11 +199,11 @@ User logs out → Watch triggers → items cleared
 
 2. Submit → authService.register()
    └─ POST /api/auth/register
-   
+
 3. Backend validates
    ├─ Success: 201 Created + UserDTO
    └─ Error: 409 Conflict (duplicate)
-   
+
 4. Frontend
    ├─ Success: showSuccess() → Redirect to login
    └─ Error: showError() → Display message
@@ -205,11 +218,11 @@ User logs out → Watch triggers → items cleared
 2. Submit → useAuth().doLogin()
    └─ authService.login()
        └─ POST /api/auth/login (form-urlencoded)
-       
+
 3. Backend authenticates
    ├─ Success: Set JSESSIONID cookie + 200 OK
    └─ Error: 401 Unauthorized
-   
+
 4. Frontend
    ├─ Success:
    │   ├─ Fetch user via /api/auth/me
@@ -231,15 +244,15 @@ User logs out → Watch triggers → items cleared
 2. initAuth() → useAuth().init()
    └─ authService.currentUser()
        └─ GET /api/auth/me
-       
+
 3. Backend checks session
    ├─ Valid: Return UserDTO
    └─ Invalid: 401 Unauthorized
-   
+
 4. Frontend
    ├─ Valid: Set useAuth().user
    └─ Invalid: user remains null
-   
+
 5. Set ready = true
    └─ Router guards can now evaluate
 ```
@@ -250,16 +263,16 @@ User logs out → Watch triggers → items cleared
 1. User clicks logout → useAuth().doLogout()
    └─ authService.logout()
        └─ POST /api/auth/logout
-       
+
 2. Backend invalidates session
    └─ Clear JSESSIONID cookie
-   
+
 3. Frontend
    └─ Clear useAuth().user = null
-   
+
 4. Cart watcher triggers
    └─ useCart().items = []
-   
+
 5. Router redirects to home
 ```
 
@@ -316,6 +329,7 @@ User logs out → Watch triggers → items cleared
 ### Reactive Data Flow
 
 **Vue's Reactivity:**
+
 ```
 ref/reactive → computed → template
      ↓            ↓          ↓
@@ -323,17 +337,16 @@ ref/reactive → computed → template
 ```
 
 **Cart Example:**
+
 ```javascript
 // Reactive source
 const items = ref([{ quantity: 1, price: 10 }]);
 
 // Computed (auto-updates)
-const totalValue = computed(() => 
-  items.value.reduce((sum, i) => sum + i.total, 0)
-);
+const totalValue = computed(() => items.value.reduce((sum, i) => sum + i.total, 0));
 
 // Template (auto-renders)
-<span>{{ totalValue }}</span>
+<span>{{ totalValue }}</span>;
 ```
 
 ### Route Guards and Data Flow
@@ -344,7 +357,7 @@ const totalValue = computed(() =>
 2. Router beforeEach guard
    ├─ Check route.meta.requiresAuth
    └─ Check useAuth().ready
-   
+
 3. If requires auth
    ├─ Check useAuth().isLoggedIn()
    │   ├─ True: Allow navigation
@@ -354,7 +367,7 @@ const totalValue = computed(() =>
        ├─ Check user.roles includes required
        │   ├─ True: Allow
        │   └─ False: Redirect to /auth/access
-       
+
 4. Component loads
    └─ Can safely assume authentication
 ```
@@ -370,21 +383,24 @@ const totalValue = computed(() =>
 **Purpose:** Browse and purchase fish
 
 **Dependencies:**
+
 - `useCart()` - Add items to cart
 - `apiFetch()` - Load fish list
 
 **State:**
+
 ```javascript
 const fish = ref([]); // List of available fish
 const loading = ref(false);
 ```
 
 **Lifecycle:**
+
 ```
 mounted → loadFish()
   └─ GET /api/fish
   └─ fish.value = data
-  
+
 User clicks "Add" → addToCart(fish)
   └─ useCart().addItem(fish)
   └─ showSuccess() or showError()
@@ -395,16 +411,19 @@ User clicks "Add" → addToCart(fish)
 **Purpose:** View user's order history
 
 **Dependencies:**
+
 - `useAuth()` - Get current user
 - `apiFetch()` - Load bills
 
 **State:**
+
 ```javascript
 const bills = ref([]);
 const selectedBill = ref(null);
 ```
 
 **Actions:**
+
 - View bill details
 - Cancel pending bills
 - Pay for bills
@@ -416,6 +435,7 @@ const selectedBill = ref(null);
 **Auth:** Requires ADMIN role
 
 **Features:**
+
 - Stats widgets
 - Recent sales
 - Revenue charts
@@ -427,12 +447,14 @@ const selectedBill = ref(null);
 **Purpose:** Authenticated pages layout
 
 **Features:**
+
 - Top bar with user menu
 - Sidebar navigation
 - Main content area
 - Cart indicator
 
 **Structure:**
+
 ```
 ┌─────────────────────────────────┐
 │       AppTopbarPrivate          │
@@ -450,6 +472,7 @@ const selectedBill = ref(null);
 **Purpose:** Public pages layout
 
 **Features:**
+
 - Marketing-focused
 - Simple navigation
 - No authentication required
@@ -463,45 +486,45 @@ const selectedBill = ref(null);
 **Features:**
 
 1. **Automatic JSON Handling**
-   - Detects object body → stringify + set Content-Type
-   - Detects JSON response → parse automatically
+    - Detects object body → stringify + set Content-Type
+    - Detects JSON response → parse automatically
 
 2. **CSRF Protection**
-   - Reads token from cookie
-   - Adds X-XSRF-TOKEN header to mutations
-   - Skips for GET/HEAD
+    - Reads token from cookie
+    - Adds X-XSRF-TOKEN header to mutations
+    - Skips for GET/HEAD
 
 3. **Credential Inclusion**
-   - Always sends cookies (credentials: 'include')
-   - Required for session auth
+    - Always sends cookies (credentials: 'include')
+    - Required for session auth
 
 4. **Error Standardization**
-   - Throws structured object: `{ status, data, message }`
-   - Consistent error shape for handlers
+    - Throws structured object: `{ status, data, message }`
+    - Consistent error shape for handlers
 
 **Usage Patterns:**
 
 ```javascript
 // Simple GET
-const { data } = await apiFetch('/api/fish');
+const { data } = await apiFetch("/api/fish");
 
 // POST with body
-await apiFetch('/api/cart', {
-  method: 'POST',
-  body: { fishId: 1, quantity: 2 }
+await apiFetch("/api/cart", {
+    method: "POST",
+    body: { fishId: 1, quantity: 2 },
 });
 
 // DELETE
 await apiFetch(`/api/cart/${fishId}`, {
-  method: 'DELETE'
+    method: "DELETE",
 });
 
 // With error handling
 try {
-  await apiFetch('/api/endpoint');
+    await apiFetch("/api/endpoint");
 } catch (err) {
-  // err = { status: 404, data: {...}, message: "..." }
-  showError(toast, err);
+    // err = { status: 404, data: {...}, message: "..." }
+    showError(toast, err);
 }
 ```
 
@@ -510,6 +533,7 @@ try {
 **Purpose:** Single source of truth for endpoints, messages, roles
 
 **Benefits:**
+
 - Refactoring safety
 - Autocomplete support
 - Type-like documentation
@@ -519,25 +543,25 @@ try {
 
 ```javascript
 export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN: '/api/auth/login',
-    LOGOUT: '/api/auth/logout',
-    // ...
-  },
-  CART: {
-    BASE: '/api/cart',
-    BY_FISH: (fishId) => `/api/cart/${fishId}`,
-  },
+    AUTH: {
+        LOGIN: "/api/auth/login",
+        LOGOUT: "/api/auth/logout",
+        // ...
+    },
+    CART: {
+        BASE: "/api/cart",
+        BY_FISH: (fishId) => `/api/cart/${fishId}`,
+    },
 };
 
 export const ROLES = {
-  USER: 'ROLE_USER',
-  ADMIN: 'ROLE_ADMIN',
+    USER: "ROLE_USER",
+    ADMIN: "ROLE_ADMIN",
 };
 
 export const ERROR_MESSAGES = {
-  LOGIN_REQUIRED: 'You must be logged in...',
-  // ...
+    LOGIN_REQUIRED: "You must be logged in...",
+    // ...
 };
 ```
 
@@ -550,29 +574,29 @@ export const ERROR_MESSAGES = {
 **handleError.js** provides consistent error handling:
 
 1. **HTTP Status → User Message**
-   - Maps status codes to friendly messages
-   - Handles network errors
-   - Extracts validation errors
+    - Maps status codes to friendly messages
+    - Handles network errors
+    - Extracts validation errors
 
 2. **Toast Notifications**
-   - Error: Red, 4s
-   - Success: Green, 3s
-   - Consistent placement and style
+    - Error: Red, 4s
+    - Success: Green, 3s
+    - Consistent placement and style
 
 3. **Usage Pattern**
 
 ```javascript
-import { showError, showSuccess } from '@/auth/handleError';
+import { showError, showSuccess } from "@/auth/handleError";
 
 async function performAction() {
-  try {
-    await apiCall();
-    showSuccess(toast, SUCCESS_MESSAGES.ACTION_COMPLETE);
-  } catch (err) {
-    showError(toast, err);
-    // Optional custom message
-    // showError(toast, err, { message: 'Custom message' });
-  }
+    try {
+        await apiCall();
+        showSuccess(toast, SUCCESS_MESSAGES.ACTION_COMPLETE);
+    } catch (err) {
+        showError(toast, err);
+        // Optional custom message
+        // showError(toast, err, { message: 'Custom message' });
+    }
 }
 ```
 
@@ -581,10 +605,10 @@ async function performAction() {
 ```
 API Error → fetchClient throws
   └─ { status: 409, data: {...}, message: "..." }
-  
+
 Component catch block
   └─ showError(toast, err)
-  
+
 handleError.js
   ├─ mapFriendlyMessage(err)
   │   └─ 409 → "Conflict: already exists"
@@ -603,24 +627,28 @@ handleError.js
 ### CSRF Protection
 
 **Implementation:**
+
 1. Token stored in cookie by backend
 2. Read by `csrf.js`
 3. Added to headers by `fetchClient.js`
 4. Validated by backend
 
 **When Applied:**
+
 - All POST, PUT, DELETE, PATCH requests
 - Skipped for GET, HEAD (safe methods)
 
 ### Session Management
 
 **Cookie-based:**
+
 - `JSESSIONID` set by backend
 - HTTP-only flag (not accessible to JS)
 - Secure flag (HTTPS only in prod)
 - SameSite=Lax (CSRF protection)
 
 **Advantages:**
+
 - No token storage in localStorage
 - Automatic expiration
 - Secure by default
@@ -628,11 +656,13 @@ handleError.js
 ### Route Protection
 
 **Implementation:**
+
 - Route guards check `useAuth().user`
 - Verify roles if specified
 - Redirect unauthorized users
 
 **Levels:**
+
 1. **Authentication** - User logged in?
 2. **Authorization** - User has role?
 3. **Ownership** - User owns resource? (backend enforces)
@@ -644,6 +674,7 @@ handleError.js
 ### Code Splitting
 
 **Automatic:**
+
 - Route-level splitting via `() => import()`
 - Each page is separate chunk
 - Loaded on demand
@@ -651,6 +682,7 @@ handleError.js
 ### Reactive Performance
 
 **Best Practices:**
+
 - Use `computed()` for derived state
 - Avoid deeply nested reactivity
 - Use `readonly()` to prevent mutations
@@ -659,6 +691,7 @@ handleError.js
 ### API Calls
 
 **Strategies:**
+
 - Cache in composable state
 - Don't refetch unnecessarily
 - Debounce user inputs
@@ -671,11 +704,13 @@ handleError.js
 ### Manual Testing
 
 **Critical Paths:**
+
 1. Registration → Login → Browse → Cart → Checkout
 2. Login → Profile → Update → Save
 3. Admin → Dashboard → Bills → Update Status
 
 **Test Cases:**
+
 - Valid and invalid inputs
 - Network errors
 - Session expiration
@@ -684,12 +719,14 @@ handleError.js
 ### Integration Points
 
 **Frontend ↔ Backend:**
+
 - Auth endpoints
 - Cart operations
 - Bill creation
 - Profile updates
 
 **Contract:**
+
 - Must match backend API spec
 - Check response shapes
 - Handle all error codes
@@ -705,6 +742,7 @@ npm run build
 ```
 
 **Output:**
+
 - `dist/` directory
 - Optimized assets
 - Code splitting
@@ -713,21 +751,25 @@ npm run build
 ### Environment Variables
 
 **Required:**
+
 - `VITE_API_BASE` - Backend URL
 
 **Optional:**
+
 - `VITE_APP_TITLE` - Application title
 - `VITE_ENV` - Environment name
 
 ### Hosting
 
 **Static hosting options:**
+
 - Vercel (configured via `vercel.json`)
 - Netlify
 - GitHub Pages
 - S3 + CloudFront
 
 **Requirements:**
+
 - SPA routing support (redirect to index.html)
 - HTTPS enabled
 - CORS configured on backend
@@ -748,12 +790,14 @@ npm run build
 ### Refactoring Guidelines
 
 **Safe changes:**
+
 - Extract to composable
 - Move to constants
 - Add JSDoc
 - Improve error handling
 
 **Risky changes:**
+
 - Change state shape
 - Modify composable API
 - Remove error handling

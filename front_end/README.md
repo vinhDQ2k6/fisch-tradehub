@@ -5,6 +5,7 @@ A modern Vue 3 single-page application for the fish shop trading system with Pri
 ## Overview
 
 The frontend is built with:
+
 - **Vue 3** with Composition API
 - **PrimeVue 4** - Enterprise-grade UI components
 - **Vue Router** - Client-side routing with guards
@@ -53,18 +54,22 @@ src/
 ### Design Patterns
 
 #### Composition API Pattern
+
 All state management uses Vue 3 Composition API:
+
 - **Composables** (`useAuth`, `useCart`) - Reusable reactive state
 - **Singleton pattern** - Shared state across components
 - **Dependency injection** - Clean separation of concerns
 
 #### State Management
+
 - **Module-scoped singletons** - No Vuex/Pinia needed
 - **Reactive refs** - Vue's built-in reactivity
 - **Computed properties** - Derived state
 - **Watchers** - Side effects and synchronization
 
 #### Error Handling
+
 - **Centralized** - All errors through `handleError.js`
 - **User-friendly** - HTTP status → readable messages
 - **Toast notifications** - PrimeVue toast service
@@ -74,7 +79,7 @@ All state management uses Vue 3 Composition API:
 
 ### Prerequisites
 
-- Node.js 16+ 
+- Node.js 16+
 - npm or yarn
 - Backend API running (see `back_end/README.md`)
 
@@ -126,12 +131,14 @@ npm run lint
 ### Authentication
 
 **Session-based authentication:**
+
 - Login/logout with remember-me
 - Session persistence via cookies
 - Automatic session check on startup
 - Protected routes with route guards
 
 **Files:**
+
 - `auth/authService.js` - API calls
 - `auth/useAuth.js` - State management
 - `auth/routeGuard.js` - Route protection
@@ -139,29 +146,33 @@ npm run lint
 ### Shopping Cart
 
 **Reactive cart state:**
+
 - Add/remove items
 - Quantity management
 - Real-time total calculation
 - Persists in backend
 
 **Files:**
+
 - `cart/useCart.js` - Cart composable
 
 ### Route Protection
 
 **Guard system:**
+
 - Check authentication status
 - Verify user roles
 - Redirect to login or access denied
 - Remember intended destination
 
 **Configuration:**
+
 ```javascript
 {
   path: '/dashboard',
-  meta: { 
-    requiresAuth: true, 
-    roles: ['ADMIN'] 
+  meta: {
+    requiresAuth: true,
+    roles: ['ADMIN']
   }
 }
 ```
@@ -169,20 +180,22 @@ npm run lint
 ### Error Handling
 
 **Consistent error display:**
+
 - HTTP status → user message mapping
 - Validation error extraction
 - Network error detection
 - Toast notifications
 
 **Usage:**
+
 ```javascript
-import { showError, showSuccess } from '@/auth/handleError';
+import { showError, showSuccess } from "@/auth/handleError";
 
 try {
-  await apiCall();
-  showSuccess(toast, 'Operation successful!');
+    await apiCall();
+    showSuccess(toast, "Operation successful!");
 } catch (err) {
-  showError(toast, err);
+    showError(toast, err);
 }
 ```
 
@@ -191,22 +204,24 @@ try {
 ### API Client
 
 **Features:**
+
 - Automatic JSON handling
 - CSRF token injection
 - Credential inclusion (cookies)
 - Error standardization
 
 **Usage:**
+
 ```javascript
-import { apiFetch } from '@/auth/fetchClient';
+import { apiFetch } from "@/auth/fetchClient";
 
 // GET request
-const { data } = await apiFetch('/api/fish');
+const { data } = await apiFetch("/api/fish");
 
 // POST request
-await apiFetch('/api/cart', {
-  method: 'POST',
-  body: { fishId: 1, quantity: 2 }
+await apiFetch("/api/cart", {
+    method: "POST",
+    body: { fishId: 1, quantity: 2 },
 });
 ```
 
@@ -215,7 +230,7 @@ await apiFetch('/api/cart', {
 All API endpoints centralized in `common/constants.js`:
 
 ```javascript
-import { API_ENDPOINTS } from '@/common/constants';
+import { API_ENDPOINTS } from "@/common/constants";
 
 await apiFetch(API_ENDPOINTS.CART.BASE);
 await apiFetch(API_ENDPOINTS.BILLS.BY_ID(123));
@@ -226,11 +241,13 @@ await apiFetch(API_ENDPOINTS.BILLS.BY_ID(123));
 ### Layouts
 
 **AppLayoutPublic.vue**
+
 - Public pages (landing, fish list)
 - No authentication required
 - Marketing-focused design
 
 **AppLayoutPrivate.vue**
+
 - Protected pages (dashboard, bills)
 - Requires authentication
 - Application-focused design
@@ -250,12 +267,14 @@ await apiFetch(API_ENDPOINTS.BILLS.BY_ID(123));
 ### TailwindCSS + PrimeVue
 
 **Approach:**
+
 - Utility-first with Tailwind
 - Component library with PrimeVue
 - Theme customization via `tailwindcss-primeui`
 - Responsive by default
 
 **Theme:**
+
 - Configured in `vite.config.mjs`
 - Uses PrimeVue themes
 - Dark/light mode support
@@ -265,6 +284,7 @@ await apiFetch(API_ENDPOINTS.BILLS.BY_ID(123));
 ### Code Style
 
 **Follow existing patterns:**
+
 1. Use Composition API over Options API
 2. Extract reusable logic to composables
 3. Add JSDoc to all public functions
@@ -276,22 +296,22 @@ await apiFetch(API_ENDPOINTS.BILLS.BY_ID(123));
 ```javascript
 /**
  * Description of composable.
- * 
+ *
  * @returns {Object} Composable state and methods
  */
 export function useFeature() {
-  const state = ref(null);
-  
-  /**
-   * Method description.
-   * @param {string} param - Parameter description
-   * @returns {Promise<void>}
-   */
-  async function method(param) {
-    // Implementation
-  }
-  
-  return { state, method };
+    const state = ref(null);
+
+    /**
+     * Method description.
+     * @param {string} param - Parameter description
+     * @returns {Promise<void>}
+     */
+    async function method(param) {
+        // Implementation
+    }
+
+    return { state, method };
 }
 ```
 
@@ -301,10 +321,10 @@ Add to `common/constants.js`:
 
 ```javascript
 export const API_ENDPOINTS = {
-  NEW_FEATURE: {
-    BASE: '/api/feature',
-    BY_ID: (id) => `/api/feature/${id}`,
-  },
+    NEW_FEATURE: {
+        BASE: "/api/feature",
+        BY_ID: (id) => `/api/feature/${id}`,
+    },
 };
 ```
 
@@ -313,7 +333,7 @@ export const API_ENDPOINTS = {
 Use constants for consistency:
 
 ```javascript
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '@/common/constants';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/common/constants";
 
 showError(toast, ERROR_MESSAGES.LOGIN_REQUIRED);
 showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
@@ -333,6 +353,7 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ### Integration Points
 
 **Critical paths:**
+
 - Register → Login → Browse → Add to Cart → Checkout → View Bill
 - Admin → Dashboard → View All Bills → Update Status
 - User → Profile → Update Info
@@ -342,6 +363,7 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ### CSRF Protection
 
 **Automatic:**
+
 - CSRF token stored in cookie
 - Token sent with mutating requests
 - Managed by `csrf.js` and `fetchClient.js`
@@ -349,6 +371,7 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ### Authentication
 
 **Session-based:**
+
 - `JSESSIONID` cookie
 - HTTP-only, secure flags
 - Backend validates all requests
@@ -356,6 +379,7 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ### Route Guards
 
 **Protection:**
+
 - Check auth status before rendering
 - Verify user roles
 - Redirect unauthorized users
@@ -365,12 +389,14 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ### Optimization
 
 **Built-in:**
+
 - Vite's fast HMR
 - Code splitting per route
 - Component lazy loading
 - Tree-shaking
 
 **Best practices:**
+
 - Use `v-once` for static content
 - Lazy load images
 - Debounce user input
@@ -381,19 +407,23 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ### Common Issues
 
 **"Missing: VITE_API_BASE"**
+
 - Create `.env` file with `VITE_API_BASE`
 - Restart dev server
 
 **CORS errors**
+
 - Check backend CORS configuration
 - Verify origin matches frontend URL
 
 **401 Unauthorized**
+
 - Session expired, login again
 - Check backend is running
 - Verify cookie settings
 
 **Cart not updating**
+
 - Check user is logged in
 - Verify network requests in DevTools
 - Check backend cart endpoint
@@ -407,6 +437,7 @@ showSuccess(toast, SUCCESS_MESSAGES.ORDER_PLACED);
 ## Contributing
 
 **Before submitting:**
+
 1. Run linter: `npm run lint`
 2. Test manually
 3. Add JSDoc to new functions
@@ -420,6 +451,7 @@ Educational project for learning purposes.
 ## Support
 
 For questions:
+
 1. Check this README
 2. Review [Frontend Specification](FRONTEND_SPECIFICATION.md)
 3. Check browser DevTools console
