@@ -271,6 +271,16 @@ public class BillService {
   }
 
   /**
+   * Get all bills filtered by status (admin function).
+   *
+   * @param status the bill status to filter by
+   * @return list of bills with the specified status
+   */
+  public List<BillDTO> getBillsByStatus(BillStatus status) {
+    return billRepository.findByStatus(status).stream().map(this::toDto).toList();
+  }
+
+  /**
    * Complete a bill (ADMIN function).
    * Marks a PROCESSING bill as COMPLETED (order delivered/fulfilled).
    *
@@ -291,6 +301,7 @@ public class BillService {
     }
 
     bill.setStatus(BillStatus.COMPLETED);
+    bill.setClosedAt(java.time.LocalDateTime.now());
     bill = billRepository.save(bill);
 
     return toDto(bill);

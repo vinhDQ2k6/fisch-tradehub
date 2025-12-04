@@ -72,6 +72,9 @@ public class Bill {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
+    @Column(name = "transaction_id")
+    private String transactionId;
+
     // Có thể null nếu chưa rating
     private Short rating;
 
