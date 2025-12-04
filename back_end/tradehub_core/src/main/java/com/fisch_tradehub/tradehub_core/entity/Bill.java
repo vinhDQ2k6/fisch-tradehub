@@ -75,6 +75,10 @@ public class Bill {
     // Có thể null nếu chưa rating
     private Short rating;
 
+    // Transaction ID from payment gateway
+    @Column(name = "transaction_id")
+    private String transactionId;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

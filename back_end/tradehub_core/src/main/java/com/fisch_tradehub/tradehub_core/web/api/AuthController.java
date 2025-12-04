@@ -1,6 +1,7 @@
 package com.fisch_tradehub.tradehub_core.web.api;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,9 +20,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fisch_tradehub.tradehub_core.common.Constants;
 import com.fisch_tradehub.tradehub_core.service.AuthService;
+import com.fisch_tradehub.tradehub_core.service.PasswordResetService;
+import com.fisch_tradehub.tradehub_core.web.dto.ForgotPasswordRequest;
 import com.fisch_tradehub.tradehub_core.web.dto.LoginRequest;
 import com.fisch_tradehub.tradehub_core.web.dto.RegisterRequest;
+import com.fisch_tradehub.tradehub_core.web.dto.ResetPasswordRequest;
 import com.fisch_tradehub.tradehub_core.web.dto.UserDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,6 +46,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
     /**
      * Authenticate user and create session.
@@ -132,5 +138,36 @@ public class AuthController {
         SecurityContextHolder.setContext(emptyContext);
         securityContextRepository.saveContext(emptyContext, request, response);
         return ResponseEntity.ok("Logged out");
+    }
+
+    /**
+     * Request a password reset email.
+     * Returns same response whether email exists or not (security).
+     * 
+     * @param request the forgot password request
+     * @return success message
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.createPasswordResetToken(request.email());
+        return ResponseEntity.ok(Map.of(
+            "message", Constants.PASSWORD_RESET_EMAIL_SENT
+        ));
+    }
+
+    /**
+     * Reset password using a valid token.
+     * 
+     * @param request the reset password request
+     * @return success message
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok(Map.of(
+            "message", "Password has been reset successfully"
+        ));
     }
 }
