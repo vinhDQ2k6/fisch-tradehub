@@ -34,4 +34,15 @@ public final class Constants {
 
   public static final String USERNAME_EXISTS = "Username already exists";
   public static final String EMAIL_EXISTS = "Email already exists";
+
+  // Admin Messages
+  public static final String CANNOT_DISABLE_SELF = "Cannot disable your own account";
+  public static final String INVALID_ROLE = "Invalid role specified";
+
+  // Password Reset Messages
+  public static final String TOKEN_NOT_FOUND = "Invalid or expired reset token";
+  public static final String TOKEN_EXPIRED = "Reset token has expired";
+  public static final String TOKEN_ALREADY_USED = "Reset token has already been used";
+  public static final String PASSWORD_RESET_EMAIL_SENT =
+    "If the email exists, a reset link has been sent";
 }
