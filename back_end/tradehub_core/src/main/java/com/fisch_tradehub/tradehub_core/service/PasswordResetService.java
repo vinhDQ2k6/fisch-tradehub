@@ -43,9 +43,9 @@ public class PasswordResetService {
     public void createPasswordResetToken(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
-        // Security: don't reveal if email doesn't exist
+        // Security: don't reveal if email doesn't exist - just log at debug level without email
         if (userOptional.isEmpty()) {
-            log.warn("Password reset requested for non-existent email: {}", email);
+            log.debug("Password reset requested for non-existent email");
             return;
         }
 

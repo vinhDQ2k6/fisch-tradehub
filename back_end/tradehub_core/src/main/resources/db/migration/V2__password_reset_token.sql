@@ -15,3 +15,4 @@ CREATE TABLE `password_reset_token` (
 
 CREATE INDEX `idx_reset_token` ON `password_reset_token`(`token`);
 CREATE INDEX `idx_reset_user` ON `password_reset_token`(`user_id`);
+CREATE INDEX `idx_reset_expiry` ON `password_reset_token`(`expiry_date`);

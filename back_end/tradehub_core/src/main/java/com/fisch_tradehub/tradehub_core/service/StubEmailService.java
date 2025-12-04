@@ -1,5 +1,6 @@
 package com.fisch_tradehub.tradehub_core.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StubEmailService implements EmailService {
 
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Override
     public void sendPasswordResetEmail(String to, String resetToken) {
         // Log to console instead of sending real email
@@ -19,7 +23,7 @@ public class StubEmailService implements EmailService {
         log.info("       PASSWORD RESET EMAIL");
         log.info("========================================");
         log.info("To: {}", to);
-        log.info("Reset Link: http://localhost:5173/reset-password?token={}", resetToken);
+        log.info("Reset Link: {}/reset-password?token={}", frontendUrl, resetToken);
         log.info("Token expires in 24 hours");
         log.info("========================================");
     }

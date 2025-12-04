@@ -21,8 +21,8 @@ public class MockPaymentGateway implements PaymentGateway {
         log.info("Processing mock payment for bill: {}, amount: {}",
             request.billId(), request.amount());
 
-        // Simulate 100% success rate
-        String txnId = "MOCK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // Simulate 100% success rate with full UUID for uniqueness
+        String txnId = "MOCK-" + UUID.randomUUID().toString();
 
         return new PaymentResult(
             true,

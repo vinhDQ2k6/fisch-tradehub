@@ -75,12 +75,16 @@ public class AdminUserService {
             throw new BusinessException(Constants.CANNOT_DISABLE_SELF);
         }
 
-        // Constraint: role must be valid
-        if (!VALID_ROLES.contains(request.role())) {
-            throw new BusinessException(Constants.INVALID_ROLE);
+        // Update role if provided
+        if (request.role() != null) {
+            // Constraint: role must be valid
+            if (!VALID_ROLES.contains(request.role())) {
+                throw new BusinessException(Constants.INVALID_ROLE);
+            }
+            user.setRole(request.role());
         }
 
-        user.setRole(request.role());
+        // Update active status if provided
         if (request.active() != null) {
             user.setActive(request.active());
         }

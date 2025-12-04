@@ -147,6 +147,21 @@ class AdminUserServiceTest {
             .hasMessageContaining("Invalid role");
     }
 
+    @Test
+    @DisplayName("updateUser - Should update only active status when role is null")
+    void updateUser_ShouldUpdateOnlyActiveStatus_WhenRoleIsNull() {
+        User user = createTestUser(1L, "user1", "ROLE_USER");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        UpdateUserRequest request = new UpdateUserRequest(null, false);
+        AdminUserDTO result = adminUserService.updateUser(1L, request, "admin");
+
+        assertThat(result.role()).isEqualTo("ROLE_USER"); // unchanged
+        assertThat(result.active()).isFalse();
+        verify(userRepository).save(any(User.class));
+    }
+
     // ========== softDeleteUser Tests ==========
 
     @Test
