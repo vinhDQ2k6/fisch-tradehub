@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.payos.model.v2.paymentRequests.PaymentLink;
 
 /**
  * Service for managing bills (orders) and checkout operations.
@@ -34,6 +35,7 @@ public class BillService {
   private final BillInfoRepository billInfoRepository;
   private final CartRepository cartRepository;
   private final UserRepository userRepository;
+  private final PayOSService payOSService;
 
   /**
    * Create a bill from the user's cart items.
@@ -120,11 +122,30 @@ public class BillService {
    * @return the bill details
    * @throws ResourceNotFoundException if bill not found
    */
+  @Transactional
   public BillDTO getBillById(Long id) {
     Bill bill = billRepository
       .findById(id)
       .orElseThrow(() -> new ResourceNotFoundException(Constants.BILL_NOT_FOUND)
       );
+
+    if (bill.getStatus() == BillStatus.PENDING_PAYMENT) {
+      try {
+        PaymentLink paymentLink = payOSService.getPaymentLinkInfo(bill.getId());
+        if (paymentLink != null) {
+          if ("PAID".equals(paymentLink.getStatus())) {
+            bill.setStatus(BillStatus.PROCESSING);
+            billRepository.save(bill);
+          } else if ("CANCELLED".equals(paymentLink.getStatus())) {
+            bill.setStatus(BillStatus.CANCELLED);
+            billRepository.save(bill);
+          }
+        }
+      } catch (Exception e) {
+        // Ignore error, just return current status
+      }
+    }
+
     return toDto(bill);
   }
 
@@ -187,6 +208,37 @@ public class BillService {
     bill = billRepository.save(bill);
 
     return toDto(bill);
+  }
+
+  /**
+   * Confirm payment for a bill (System/Webhook function).
+   * Marks a PENDING_PAYMENT bill as PROCESSING.
+   * Idempotent: If already PROCESSING or COMPLETED, does nothing.
+   *
+   * @param billId the bill ID
+   */
+  @Transactional
+  public void confirmPayment(Long billId) {
+    Bill bill = billRepository
+      .findById(billId)
+      .orElseThrow(() -> new ResourceNotFoundException(Constants.BILL_NOT_FOUND)
+      );
+
+    if (
+      bill.getStatus() == BillStatus.PROCESSING ||
+      bill.getStatus() == BillStatus.COMPLETED
+    ) {
+      return; // Idempotent
+    }
+
+    if (bill.getStatus() != BillStatus.PENDING_PAYMENT) {
+      throw new BusinessException(
+        "Cannot confirm payment for bill in status: " + bill.getStatus()
+      );
+    }
+
+    bill.setStatus(BillStatus.PROCESSING);
+    billRepository.save(bill);
   }
 
   /**
@@ -277,7 +329,11 @@ public class BillService {
    * @return list of bills with the specified status
    */
   public List<BillDTO> getBillsByStatus(BillStatus status) {
-    return billRepository.findByStatus(status).stream().map(this::toDto).toList();
+    return billRepository
+      .findByStatus(status)
+      .stream()
+      .map(this::toDto)
+      .toList();
   }
 
   /**

@@ -13,117 +13,135 @@ import { createRouter, createWebHistory } from "vue-router";
  * 5. Error/utility routes
  */
 const router = createRouter({
-    history: createWebHistory(),
-    routes: [
-        // ============================================================
-        // PUBLIC ROUTES (No authentication required)
-        // ============================================================
+  history: createWebHistory(),
+  routes: [
+    // ============================================================
+    // PUBLIC ROUTES (No authentication required)
+    // ============================================================
+    {
+      path: "/",
+      component: AppLayoutPublic,
+      children: [
         {
-            path: "/",
-            component: AppLayoutPublic,
-            children: [
-                {
-                    path: "",
-                    name: "landing",
-                    component: () => import("@/views/public/Landing.vue"),
-                },
-                {
-                    path: "fishes",
-                    name: "fishes",
-                    component: () => import("@/views/public/FischTrade.vue"),
-                },
-            ],
+          path: "",
+          name: "landing",
+          component: () => import("@/views/public/Landing.vue"),
         },
+        {
+          path: "fishes",
+          name: "fishes",
+          component: () => import("@/views/public/FischTrade.vue"),
+        },
+      ],
+    },
+    {
+      path: "/payment",
+      component: AppLayoutPublic,
+      children: [
+        {
+          path: "success",
+          name: "paymentSuccess",
+          component: () => import("@/views/user/PaymentResult.vue"),
+          props: { status: "success" },
+        },
+        {
+          path: "cancel",
+          name: "paymentCancel",
+          component: () => import("@/views/user/PaymentResult.vue"),
+          props: { status: "cancel" },
+        },
+      ],
+    },
 
-        // ============================================================
-        // AUTHENTICATION ROUTES
-        // ============================================================
+    // ============================================================
+    // AUTHENTICATION ROUTES
+    // ============================================================
+    {
+      path: "/auth",
+      children: [
         {
-            path: "/auth",
-            children: [
-                {
-                    path: "login",
-                    name: "login",
-                    component: () => import("@/views/pages/auth/Login.vue"),
-                },
-                {
-                    path: "register",
-                    name: "register",
-                    component: () => import("@/views/pages/auth/Register.vue"),
-                },
-                {
-                    path: "profile",
-                    name: "profile",
-                    component: () => import("@/views/pages/auth/Profile.vue"),
-                    meta: { requiresAuth: true },
-                },
-                {
-                    path: "access",
-                    name: "accessDenied",
-                    component: () => import("@/views/pages/auth/Access.vue"),
-                },
-                {
-                    path: "error",
-                    name: "error",
-                    component: () => import("@/views/pages/auth/Error.vue"),
-                },
-            ],
+          path: "login",
+          name: "login",
+          component: () => import("@/views/pages/auth/Login.vue"),
         },
+        {
+          path: "register",
+          name: "register",
+          component: () => import("@/views/pages/auth/Register.vue"),
+        },
+        {
+          path: "profile",
+          name: "profile",
+          component: () => import("@/views/pages/auth/Profile.vue"),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: "access",
+          name: "accessDenied",
+          component: () => import("@/views/pages/auth/Access.vue"),
+        },
+        {
+          path: "error",
+          name: "error",
+          component: () => import("@/views/pages/auth/Error.vue"),
+        },
+      ],
+    },
 
-        // ============================================================
-        // USER PROTECTED ROUTES (Authentication required)
-        // ============================================================
+    // ============================================================
+    // USER PROTECTED ROUTES (Authentication required)
+    // ============================================================
+    {
+      path: "/my",
+      component: AppLayoutPublic,
+      meta: { requiresAuth: true },
+      children: [
         {
-            path: "/my",
-            component: AppLayoutPublic,
-            meta: { requiresAuth: true },
-            children: [
-                {
-                    path: "orders",
-                    name: "myOrders",
-                    component: () => import("@/views/user/Debts.vue"),
-                },
-            ],
+          path: "orders",
+          name: "myOrders",
+          component: () => import("@/views/user/Debts.vue"),
         },
+      ],
+    },
 
-        // ============================================================
-        // ADMIN ROUTES (Admin role required)
-        // ============================================================
+    // ============================================================
+    // ADMIN ROUTES (Admin role required)
+    // ============================================================
+    {
+      path: "/admin",
+      component: AppLayoutPrivate,
+      meta: { requiresAuth: true, roles: ["ADMIN"] },
+      children: [
         {
-            path: "/admin",
-            component: AppLayoutPrivate,
-            meta: { requiresAuth: true, roles: ["ADMIN"] },
-            children: [
-                {
-                    path: "",
-                    redirect: "/admin/dashboard",
-                },
-                {
-                    path: "dashboard",
-                    name: "dashboard",
-                    component: () => import("@/views/admin/Dashboard.vue"),
-                },
-                {
-                    path: "bills",
-                    name: "adminBills",
-                    component: () => import("@/views/admin/Bills.vue"),
-                },
-            ],
+          path: "",
+          redirect: "/admin/dashboard",
         },
+        {
+          path: "dashboard",
+          name: "dashboard",
+          component: () => import("@/views/admin/Dashboard.vue"),
+        },
+        {
+          path: "bills",
+          name: "adminBills",
+          component: () => import("@/views/admin/Bills.vue"),
+        },
+      ],
+    },
 
-        // ============================================================
-        // ERROR & UTILITY ROUTES
-        // ============================================================
-        {
-            path: "/not-found",
-            name: "notfound",
-            component: () => import("@/views/public/NotFound.vue"),
-        },
-        {
-            path: "/:pathMatch(.*)*",
-            redirect: "/not-found",
-        },
-    ],
+    // ============================================================
+    // ERROR & UTILITY ROUTES
+    // ============================================================
+    {
+      path: "/not-found",
+      name: "notfound",
+      component: () => import("@/views/public/NotFound.vue"),
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      redirect: "/not-found",
+    },
+  ],
 });
 
 createAuthGuard(router);

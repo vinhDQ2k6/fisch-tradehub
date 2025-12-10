@@ -47,7 +47,7 @@ public class SecurityConfig {
       .authorizeHttpRequests(auth ->
         auth
           // cho phép các request không cần đăng nhập
-          .requestMatchers("/api/auth/**")
+          .requestMatchers("/api/auth/**", "/api/payments/**", "/api/fish/**")
           .permitAll()
           .requestMatchers("/api/admin/**")
           .hasRole("ADMIN")

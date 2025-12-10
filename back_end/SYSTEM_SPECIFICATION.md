@@ -344,6 +344,31 @@ The application follows a strict layered architecture with clear separation of c
    └─ Return UserDTO
 ```
 
+### OAuth2 Login Flow (Google)
+
+```
+1. Frontend → Redirects to /oauth2/authorization/google
+   │
+2. User authenticates with Google
+   │
+3. Google → Redirects to Backend (/login/oauth2/code/google)
+   │
+4. CustomOAuth2UserService.loadUser()
+   ├─ Extract email from Google info
+   ├─ Check if user exists in DB by email
+   ├─ If Not Found:
+   │   ├─ Generate username (email prefix)
+   │   ├─ Set password = "" (prevents form login)
+   │   ├─ Create User entity
+   │   └─ Save to DB
+   └─ Return OAuth2User
+   │
+5. SuccessHandler
+   ├─ Create SecurityContext
+   ├─ Save to HttpSession
+   └─ Redirect to Frontend (http://localhost:5173)
+```
+
 ### Checkout Flow
 
 ```
@@ -405,12 +430,12 @@ The application follows a strict layered architecture with clear separation of c
 
 ### Authentication Mechanism
 
-**Type:** Session-based (HTTP Session + Cookie)
+**Type:** Session-based (HTTP Session + Cookie) with Hybrid Providers (Form + OAuth2)
 
 **Flow:**
 
-1. User logs in with credentials
-2. Spring Security validates against database
+1. User logs in (via Credentials or Google)
+2. Spring Security validates against database or Provider
 3. Creates SecurityContext with Authentication
 4. Stores SecurityContext in HttpSession
 5. Returns JSESSIONID cookie to client

@@ -7,7 +7,7 @@ A Spring Boot-based REST API for a fish shop trading system with authentication,
 Fisch TradeHub is a learning project demonstrating professional backend architecture using:
 
 - **Java 17** with Spring Boot 3.5.7
-- **Spring Security** for authentication and authorization
+- **Spring Security** for authentication (Form Login + Google OAuth2) and authorization
 - **Spring Data JPA** with MySQL database
 - **Flyway** for database migrations
 - **Lombok** for reducing boilerplate code
@@ -68,6 +68,18 @@ CREATE DATABASE ftradehub;
 spring.datasource.url=jdbc:mysql://localhost:3306/ftradehub
 spring.datasource.username=root
 spring.datasource.password=root
+```
+
+### OAuth2 Setup
+
+To enable Google Login:
+
+1. Create credentials in Google Cloud Console.
+2. Update `src/main/resources/application.properties`:
+
+```properties
+spring.security.oauth2.client.registration.google.client-id=YOUR_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_CLIENT_SECRET
 ```
 
 ### Build and Run

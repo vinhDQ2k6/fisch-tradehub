@@ -40,16 +40,6 @@ public class BillController {
     return ResponseEntity.ok(billService.getBillById(id));
   }
 
-  @PostMapping("/{id}/pay")
-  public ResponseEntity<BillDTO> payBill(
-    @PathVariable Long id,
-    @AuthenticationPrincipal UserDetails userDetails
-  ) {
-    return ResponseEntity.ok(
-      billService.payBill(id, userDetails.getUsername())
-    );
-  }
-
   @PostMapping("/{id}/cancel")
   public ResponseEntity<BillDTO> cancelBill(
     @PathVariable Long id,
