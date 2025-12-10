@@ -1,542 +1,263 @@
-# Backend Overview – Fish Shop System (Spring Boot + Security + REST + Vue)
+# Fisch TradeHub Backend
 
-This document provides a comprehensive overview of the backend architecture, data model, business logic, and coding standards for the Fish Shop system.
+A Spring Boot-based REST API for a fish shop trading system with authentication, cart management, and order processing.
 
----
+## Overview
 
-## 1. System Overview
+Fisch TradeHub is a learning project demonstrating professional backend architecture using:
 
-### 1.1. Context
+- **Java 17** with Spring Boot 3.5.7
+- **Spring Security** for authentication (Form Login + Google OAuth2) and authorization
+- **Spring Data JPA** with MySQL database
+- **Flyway** for database migrations
+- **Lombok** for reducing boilerplate code
 
-- Dự án học tập dùng:
-  - Backend: Java Spring Boot, Spring Security, Spring Data JPA.
-  - DB: MySQL + Flyway (quản lý schema).
-  - Frontend: Vue (SPA) giao tiếp qua REST API.
-- Domain: “Fish shop” / “Fishing game shop” gồm:
-  - Người dùng (`user`) và profile (`user_info`).
-  - Sản phẩm: cá (`fish`).
-  - Giỏ hàng (`cart`).
-  - Hóa đơn (`bill`) và chi tiết hóa đơn (`bill_info`).
+## Architecture
 
-### 1.2. Nguyên tắc thiết kế
+The backend follows a clean **layered architecture**:
 
-1. **Đơn giản, rõ ràng, không hack**:
-
-   - Quan hệ one-to-many, many-to-one đúng hướng (user → cart, user → bill).
-   - Không dùng username/email làm FK; dùng `id` dạng numeric cho tất cả FK.
-
-2. **Security tập trung ở tầng backend**:
-
-   - Spring Security quyết định quyền (role), không tin tưởng frontend.
-   - REST API rõ ràng về public / protected endpoints.
-
-3. **Khả năng mở rộng mà không đổi nền tảng**:
-
-   - Schema đã đủ chuẩn để:
-     - Thêm permission chi tiết.
-     - Thêm thêm bảng khác (inventory, payment, v.v.) mà không phải đập lại.
-   - Kiến trúc dùng layered (Controller → Service → Repository), có thể thêm module/phân tách microservice sau nếu cần.
-
-4. **Dễ debug và dễ vá lỗi**:
-   - Cấu trúc đơn giản → stack trace dễ đọc.
-   - Quy ước tên bảng/cột rõ → viết query/debug SQL trực quan.
-
----
-
-## 2. Mô hình CSDL (đã chốt)
-
-### 2.1. Bảng `user`
-
-- Vai trò: lưu thông tin account, phục vụ login + phân quyền.
-
-```sql
-CREATE TABLE `user` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `email` VARCHAR(255) NOT NULL,
-  `username` VARCHAR(255) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `role` VARCHAR(50) NOT NULL,     -- e.g. 'ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN'
-  `active` BOOLEAN NOT NULL DEFAULT '1', -- dùng map UserDetails.isEnabled()
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY `user_email_unique` (`email`),
-  UNIQUE KEY `user_username_unique` (`username`),
-  KEY `user_username_index` (`username`)
-);
+```
+├── entity/          # JPA entities (domain models)
+├── repository/      # Data access layer (Spring Data JPA)
+├── service/         # Business logic layer
+├── web/
+│   ├── api/        # REST controllers
+│   ├── dto/        # Data Transfer Objects
+│   └── exception/  # Exception handlers
+├── security/        # Security configuration
+├── common/          # Shared constants
+└── exception/       # Custom exception types
 ```
 
-- Đặc điểm:
-  - `id`: surrogate key, UNSIGNED, dùng cho mọi FK.
-  - `email`/`username`: both unique → linh hoạt login bằng username hoặc email.
-  - `role`: một role duy nhất / user (đủ cho {customer, staff, admin}).
-  - `active`: đơn giản hóa trạng thái tài khoản. Sau này nếu cần lock, expire… có thể thêm cột mới mà không phá vỡ schema.
+### Design Principles
 
-### 2.2. Bảng `user_info`
+1. **Separation of Concerns**: Clear boundaries between layers
+2. **Single Responsibility**: Each class has one focused purpose
+3. **Dependency Injection**: Managed by Spring IoC container
+4. **Exception Handling**: Centralized via `@RestControllerAdvice`
+5. **Transaction Management**: Declarative with `@Transactional`
 
-- Profile mở rộng (tách khỏi thông tin login).
+## Domain Model
 
-```sql
-CREATE TABLE `user_info` (
-  `user_id` BIGINT UNSIGNED NOT NULL PRIMARY KEY,
-  `fullname` VARCHAR(255) NULL,
-  `age` TINYINT UNSIGNED NULL,
-  `gender` BOOLEAN NULL,
-  CONSTRAINT `user_info_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-);
-```
+The system manages:
 
-- Quan hệ: `user` (1) – (1) `user_info`.
-- Lợi ích:
-  - Không nhét mọi field vào bảng `user`.
-  - Sau này mở rộng profile (địa chỉ, avatar…) bằng cách chỉ thêm cột trong `user_info`.
+- **Users** with roles (USER, STAFF, ADMIN) and profiles
+- **Fish** (products) with rarity, price, and weight
+- **Cart** items for shopping
+- **Bills** (orders) with line items and status tracking
 
-### 2.3. Bảng `fish`
+## Getting Started
 
-- “Sản phẩm” chính.
+### Prerequisites
 
-```sql
-CREATE TABLE `fish` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(255) NOT NULL,
-  `rarity` VARCHAR(255) NOT NULL,       -- Common, Rare, Legendary...
-  `value` DECIMAL(10, 2) NOT NULL,      -- giá bán
-  `weight` DECIMAL(10, 2) NOT NULL
-);
-```
+- Java 17 or higher
+- MySQL 8.0 or higher
+- Maven 3.6+ (included via Maven Wrapper)
 
-- Lưu ý:
-  - Dùng `DECIMAL(10,2)` cho tiền để tránh sai số float.
-  - `rarity` có thể chuyển thành enum logic phía code, DB giữ dạng string.
+### Database Setup
 
-### 2.4. Bảng `cart`
-
-- Giỏ hàng: mỗi dòng là một item của user.
+1. Create a MySQL database:
 
 ```sql
-CREATE TABLE `cart` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` BIGINT UNSIGNED NOT NULL,
-  `fish_id` BIGINT UNSIGNED NOT NULL,
-  `quantity` INT NOT NULL,
-  CONSTRAINT `cart_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `cart_fish_fk` FOREIGN KEY (`fish_id`) REFERENCES `fish` (`id`),
-
-  KEY `cart_user_idx` (`user_id`),
-  UNIQUE KEY `cart_user_fish_unique` (`user_id`, `fish_id`)
-);
+CREATE DATABASE ftradehub;
 ```
 
-- Thiết kế `UNIQUE(user_id, fish_id)`:
-  - Đảm bảo 1 user chỉ có 1 dòng cho mỗi `fish`.
-  - Cho phép logic “add to cart” dùng update thay vì insert trùng:
-    - Nếu đã tồn tại → tăng `quantity`.
-    - Nếu chưa có → insert dòng.
+2. Update connection settings in `src/main/resources/application.properties`:
 
-### 2.5. Bảng `bill`
-
-- Hóa đơn (order).
-
-```sql
-CREATE TABLE `bill` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `buyer_id` BIGINT UNSIGNED NOT NULL,
-  `seller_id` BIGINT UNSIGNED NULL,
-  `total` DECIMAL(10, 2) NOT NULL,
-  `status` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `closed_at` TIMESTAMP NULL,
-  `rating` TINYINT NULL,
-  CONSTRAINT `bill_buyer_fk` FOREIGN KEY (`buyer_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `bill_seller_fk` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`),
-
-  KEY `bill_buyer_idx` (`buyer_id`),
-  KEY `bill_seller_idx` (`seller_id`),
-  KEY `bill_status_idx` (`status`)
-);
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/ftradehub
+spring.datasource.username=root
+spring.datasource.password=root
 ```
 
-- Quy ước (gợi ý):
-  - `status`: 0 = pending, 1 = paid, 2 = cancelled, 3 = completed (có thể map enum trong code).
-  - `seller_id`:
-    - Có thể là null nếu chỉ có “system” bán.
-    - Hoặc dùng để làm marketplace (nhiều seller).
+### OAuth2 Setup
 
-### 2.6. Bảng `bill_info`
+To enable Google Login:
 
-- Chi tiết hóa đơn (line items).
+1. Create credentials in Google Cloud Console.
+2. Update `src/main/resources/application.properties`:
 
-```sql
-CREATE TABLE `bill_info` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `bill_id` BIGINT UNSIGNED NOT NULL,
-  `fish_id` BIGINT UNSIGNED NOT NULL,
-  `price` DECIMAL(10, 2) NOT NULL,
-  `amount` INT NOT NULL,
-  `sum` DECIMAL(10, 2) NOT NULL,
-  CONSTRAINT `bill_info_bill_fk` FOREIGN KEY (`bill_id`) REFERENCES `bill` (`id`),
-  CONSTRAINT `bill_info_fish_fk` FOREIGN KEY (`fish_id`) REFERENCES `fish` (`id`),
-
-  KEY `bill_info_bill_idx` (`bill_id`),
-  UNIQUE KEY `bill_info_bill_fish_unique` (`bill_id`, `fish_id`)
-);
+```properties
+spring.security.oauth2.client.registration.google.client-id=YOUR_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_CLIENT_SECRET
 ```
 
-- Lưu ý:
-  - `price`: giá tại thời điểm mua (copy từ `fish.value` lúc checkout).
-  - `sum`: `price * amount`, lưu để không phải tính lại.
-  - Unique `(bill_id, fish_id)`: mỗi bill tối đa 1 dòng per fish (gọn hơn).
-
----
-
-## 3. Luồng nghiệp vụ chính
-
-### 3.1. Đăng ký + đăng nhập + phân quyền
-
-1. **Đăng ký**:
-   - `POST /api/auth/register`:
-     - Validate input.
-     - Hash `password` (BCrypt).
-     - Tạo `user` với `role = ROLE_USER`, `active = 1`.
-     - (Option) tạo `user_info` rỗng.
-2. **Đăng nhập**:
-   - `POST /api/auth/login`:
-     - Spring Security auth username/password.
-     - Trả về token (JWT) hoặc dùng session, tùy strategy bạn chọn.
-3. **Phân quyền**:
-   - Dùng `role` từ `user.role` để tạo `GrantedAuthority`.
-   - Ví dụ:
-     - `ROLE_USER` → khách hàng.
-     - `ROLE_STAFF` → nhân viên, có quyền quản lý fish.
-     - `ROLE_ADMIN` → quản trị hệ thống.
-
-### 3.2. Giỏ hàng (Cart)
-
-- **Lấy giỏ hàng**:
-
-  - `GET /api/cart`
-  - Từ authentication (SecurityContext) lấy `userId`.
-  - Query: `SELECT * FROM cart WHERE user_id = ?`.
-
-- **Thêm/cập nhật item**:
-
-  - `POST /api/cart` với `{ fishId, quantity }`.
-  - Logic:
-    - Nếu `quantity <= 0`: xóa item (delete cart row).
-    - Nếu `quantity > 0`:
-      - Tìm cart item theo `(user_id, fish_id)`.
-      - Nếu có → update `quantity`.
-      - Nếu không → insert.
-
-- **Xóa item**:
-  - `DELETE /api/cart/{cartItemId}` (hoặc `/api/cart/by-fish/{fishId}`).
-
-### 3.3. Checkout tạo Bill
-
-- Endpoint:
-  - `POST /api/bills/checkout`
-- Quy trình (bọc trong `@Transactional`):
-
-1. Lấy `userId` của buyer từ SecurityContext.
-2. Lấy list cart items của user (join fish):
-   - `SELECT c.*, f.value FROM cart c JOIN fish f ON c.fish_id = f.id WHERE c.user_id = ?`.
-3. Tính `total = sum(c.quantity * f.value)`; nếu cart rỗng → trả lỗi.
-4. Tạo `bill` mới:
-   - Insert `bill` với:
-     - `buyer_id = userId`.
-     - `seller_id` (nếu cố định, có thể gán 1 admin/system).
-     - `total`, `status = 0 (pending)`.
-5. Tạo `bill_info` cho từng item:
-   - For mỗi cart row:
-     - `price = f.value`.
-     - `amount = c.quantity`.
-     - `sum = price * amount`.
-     - Insert dòng vào `bill_info`.
-6. Xóa cart:
-   - `DELETE FROM cart WHERE user_id = ?`.
-7. Trả response:
-   - `bill` + list `bill_info` (hoặc id bill).
-
-- Sau này, bạn có thể:
-  - Cập nhật `status`, `closed_at`, `rating` qua các API:
-    - `PATCH /api/bills/{id}/status`
-    - `POST /api/bills/{id}/rating`.
-
-### 3.4. Lịch sử mua hàng & quản lý bill
-
-- **User xem lịch sử**:
-  - `GET /api/bills?role=buyer` → filter `buyer_id = currentUserId`.
-- **Staff/admin xem theo seller**:
-  - `GET /api/bills?role=seller` → filter `seller_id = currentUserId` hoặc list của shop.
-- **Chi tiết bill**:
-  - `GET /api/bills/{id}`:
-    - lấy `bill` + `bill_info` (join fish để trả name, etc.).
-
----
-
-## 4. Cách tiếp cận lập trình chuẩn (step-by-step)
-
-### 4.1. Bước 1: Khởi tạo project & config hạ tầng
-
-1. **Spring Boot project**:
-   - Dependencies:
-     - `spring-boot-starter-web`
-     - `spring-boot-starter-security`
-     - `spring-boot-starter-data-jpa`
-     - `spring-boot-starter-validation`
-     - `mysql-connector-j`
-     - `flyway-core`
-2. **application.yml**:
-   - Cấu hình:
-     - datasource (URL, user, password).
-     - JPA (hibernate ddl-auto=none vì đã dùng Flyway).
-     - Flyway: enable, locations.
-3. **Flyway**:
-   - Đặt file SQL schema này thành `V1__init_schema.sql`.
+### Build and Run
 
-### 4.2. Bước 2: Định nghĩa entities + repository
+1. Clone the repository
+2. Navigate to the backend directory:
 
-Tư duy:
+```bash
+cd back_end/tradehub_core
+```
 
-- Một bảng = một entity (cơ bản).
-- Dùng quan hệ JPA nhưng không lạm dụng (chỉ dùng nơi cần thiết).
-- Nên khai báo `@ManyToOne` phía _many_; tránh `@OneToMany` bidirectional quá phức tạp nếu chưa cần.
+3. Build the project:
 
-Gợi ý mapping:
+```bash
+./mvnw clean install
+```
 
-- Entity `User`:
+4. Run the application:
 
-  - Fields: id, email, username, password, role, active, createdAt, updatedAt.
-  - Có thể implement `UserDetails` hoặc tách 1 adapter class.
+```bash
+./mvnw spring-boot:run
+```
 
-- Entity `UserInfo`:
+The API will be available at `http://localhost:8080`
 
-  - `@OneToOne @JoinColumn(name="user_id") User user`.
+### Database Migrations
 
-- Entity `Fish`.
+Flyway automatically runs migrations on startup. Migration files are in:
 
-- Entity `Cart` (CartItem):
+```
+src/main/resources/db/migration/
+```
 
-  - `@ManyToOne User user;`
-  - `@ManyToOne Fish fish;`
-  - `quantity`.
+## API Endpoints
 
-- Entity `Bill`:
+### Authentication
 
-  - `@ManyToOne User buyer;`
-  - `@ManyToOne User seller;`
-  - `total, status, createdAt, closedAt, rating`.
-  - (Optional) `@OneToMany(mappedBy="bill") List<BillInfo> items;` (chỉ dùng nếu bạn thực sự cần load cascade).
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login and create session
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Logout and clear session
 
-- Entity `BillInfo`:
-  - `@ManyToOne Bill bill;`
-  - `@ManyToOne Fish fish;`
-  - `price, amount, sum`.
+### Fish Management
 
-Repositories:
+- `GET /api/fish` - List all fish (public)
+- `GET /api/fish/{id}` - Get fish details
+- `POST /api/fish` - Create fish (admin only)
+- `PUT /api/fish/{id}` - Update fish (admin only)
+- `DELETE /api/fish/{id}` - Delete fish (admin only)
 
-- `UserRepository` (findByUsername, findByEmail).
-- `FishRepository`.
-- `CartRepository` (findByUserId, findByUserIdAndFishId).
-- `BillRepository` (findByBuyerId, findBySellerId).
-- `BillInfoRepository` (findByBillId).
-- `UserInfoRepository`.
+### Cart Operations
 
-### 4.3. Bước 3: Cấu hình Security
+- `GET /api/cart` - Get current user's cart
+- `POST /api/cart` - Add item to cart
+- `DELETE /api/cart/{fishId}` - Remove item from cart
+- `DELETE /api/cart` - Clear entire cart
 
-Mục tiêu:
+### Order Management
 
-- Đơn giản hóa:
-  - JWT access token ngắn hạn **hoặc** session-based.
-- Tập trung vào:
-  - Auth (login/logout).
-  - Authorize (phân quyền theo role).
-  - CORS cho Vue.
+- `POST /api/bills/checkout` - Create order from cart
+- `GET /api/bills` - Get user's orders
+- `GET /api/bills/{id}` - Get order details
+- `POST /api/bills/{id}/pay` - Pay for order
+- `POST /api/bills/{id}/cancel` - Cancel pending order
 
-Luồng tối giản:
+### User Profile
 
-1. Implement `UserDetailsService`:
+- `GET /api/user/info` - Get profile information
+- `PUT /api/user/info` - Update profile information
 
-   - `loadUserByUsername()` → query `User` bằng username/email.
-   - Map `role` → `SimpleGrantedAuthority(role)`.
+## Security
 
-2. `PasswordEncoder`:
+### Authentication
 
-   - `BCryptPasswordEncoder`.
+Session-based authentication using Spring Security:
 
-3. `SecurityFilterChain`:
+- Login creates `JSESSIONID` cookie
+- Cookie sent with each request for authentication
+- Logout invalidates session and clears cookie
 
-   - Permit:
-     - `/api/auth/**`
-     - `/api/public/**` (nếu có).
-   - Require auth cho `/api/cart/**`, `/api/bills/**`, `/api/me/**`.
-   - Role-based cho admin endpoint:
-     - `/api/admin/**` → `hasRole('ADMIN')`.
+### Authorization
 
-4. CORS:
-   - Cho phép origin của Vue dev server (vd: `http://localhost:5173`) + headers cần thiết.
-   - Nếu dùng cookie, bật `allowCredentials`.
+Role-based access control:
 
-### 4.4. Bước 4: Service layer – chuẩn hóa logic
+- **Public**: Fish listing, registration, login
+- **ADMIN**: Fish CRUD, all orders, user management
+- **USER**: Cart, orders, profile
 
-Xây các service chính:
+### CORS Configuration
 
-- `AuthService`:
+Configured for Vue.js frontend at `http://localhost:5173`
 
-  - Register, login, getCurrentUser.
+## Code Structure
 
-- `UserService`:
+### Exception Handling
 
-  - Lấy và update profile (`user_info`).
-  - Admin: list users, deactivate user.
+Custom exceptions for better error semantics:
 
-- `FishService`:
+- `ResourceNotFoundException` - Entity not found (404)
+- `DuplicateResourceException` - Duplicate entry (409)
+- `UnauthorizedAccessException` - Forbidden access (403)
+- `BusinessException` - Business rule violation (400)
 
-  - CRUD fish (admin).
-  - List/search fish (public).
+All exceptions handled by `GlobalExceptionHandler` which returns appropriate HTTP responses.
 
-- `CartService`:
+### Constants
 
-  - getCartByUser.
-  - addOrUpdateItem(userId, fishId, quantity).
-  - removeItem(userId, itemId or fishId).
-  - clearCart(userId).
+Application-wide constants defined in `Constants.java`:
 
-- `BillService`:
-  - checkout(userId) → tạo bill + bill_info từ cart.
-  - listBillsForBuyer(userId).
-  - listBillsForSeller(userId).
-  - getBillDetail(billId, currentUser).
-  - updateStatus/rating (nếu cần).
+- User roles
+- Error messages
+- Reusable strings
 
-**Quy tắc:**  
-Mọi logic nghiệp vụ (transaction, validate, tính total) nằm ở Service, không đặt trong Controller.
+### DTOs
 
-### 4.5. Bước 5: REST Controllers
+Data Transfer Objects for API requests/responses:
 
-- `AuthController`: `/api/auth/*`
-- `UserController`: `/api/me/*`, `/api/users/*` (admin).
-- `FishController`: `/api/fish/*`
-- `CartController`: `/api/cart/*`
-- `BillController`: `/api/bills/*`
+- Decouple internal entities from API contracts
+- Validation annotations for input
+- Prevent exposing sensitive data
 
-Các controller chủ yếu:
+## Development
 
-- Nhận DTO từ request.
-- Gọi service.
-- Trả DTO response (không trả entity thô nếu sau này cần versioning).
+### Testing
 
----
+Run tests with:
 
-## 5. Phương hướng mở rộng & cân nhắc lợi/hại
+```bash
+./mvnw test
+```
 
-### 5.1. Về security
+### Code Style
 
-**Hiện tại:**
+The project uses:
 
-- Bảng `user` + `role` + `active` là đủ cho Spring Security.
-- Có thể dùng:
-  - JWT access token ONLY (đơn giản).
-  - Hoặc JWT + refresh token (sau này, dùng thêm table refresh_tokens, nhưng không ảnh hưởng schema hiện tại).
+- Lombok for reducing boilerplate
+- Constructor injection via `@RequiredArgsConstructor`
+- Javadoc on public methods
+- Consistent naming conventions
 
-**Mở rộng về sau:**
+## Project Structure
 
-- **Thêm multi-role**:
+```
+tradehub_core/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/fisch_tradehub/tradehub_core/
+│   │   │       ├── TradehubCoreApplication.java
+│   │   │       ├── common/         # Constants
+│   │   │       ├── entity/         # JPA entities
+│   │   │       ├── exception/      # Custom exceptions
+│   │   │       ├── repository/     # Data access
+│   │   │       ├── security/       # Security config
+│   │   │       ├── service/        # Business logic
+│   │   │       └── web/            # Controllers & DTOs
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── db/migration/       # Flyway migrations
+│   └── test/
+└── pom.xml
+```
 
-  - Nếu 1 user có nhiều role, tạo bảng `roles` + `users_roles`.
-  - Hiện giờ `role` là 1 cột string → có thể migrate sau bằng Flyway (không phá dữ liệu).
+## Contributing
 
-- **Thêm permission level chi tiết**:
+When contributing:
 
-  - Bảng `permissions`, `roles_permissions` – tất cả có thể thêm ngoài, không phải sửa `user`.
+1. Follow existing code style and structure
+2. Add Javadoc for public methods
+3. Use custom exceptions instead of generic `RuntimeException`
+4. Keep services focused and testable
+5. Update documentation for new features
 
-- **Token revocation**:
-  - Sau này nếu cần, thêm:
-    - `refresh_tokens` + `token_version` vào `user`.
+## Documentation
 
-**Lợi/ hại của hiện trạng:**
+- [System Specification](SYSTEM_SPECIFICATION.md) - Detailed technical documentation
+- [Changelog](CHANGELOG.md) - Recent updates and changes
 
-- Lợi:
-  - Đơn giản, dễ hiểu, dễ dạy Spring Security.
-  - Ít cột, ít bảng, mapping dễ viết.
-- Hại:
-  - Không hỗ trợ sẵn multi-role per user; nếu nhu cầu thay đổi cần migration.
+## License
 
-### 5.2. Về domain (cart/bill)
-
-**Hiện trạng:**
-
-- Đơn giản cho học:
-  - Không có inventory, voucher, shipping.
-  - Không có payment gateway.
-
-**Mở rộng không phá nền:**
-
-- Thêm:
-  - `inventory` table (fish_id, stock).
-  - `payment` table (bill_id, method, status).
-  - `shipping_address` table.
-- Các bảng này FK tới `bill` hoặc `user` – không phải thay đổi schema core hiện tại.
-
-### 5.3. Về kỹ thuật (code)
-
-**Hiện trạng:**
-
-- Monolith Spring Boot với layered architecture.
-- Unit test/integration test có thể thêm dần.
-
-**Mở rộng:**
-
-- Có thể:
-  - Tách module (core/domain/security).
-  - Sau này tách sang microservice nếu project lớn – DB schema vẫn dùng được.
-
----
-
-## 6. Chiến lược debug, logging, và “dễ vá lỗi”
-
-### 6.1. Logging
-
-- Bật log SQL ở chế độ dev:
-  - Giúp bạn thấy query từ JPA trùng với db schema hay không.
-- Log ở service khi:
-  - Checkout (log userId, billId).
-  - Thao tác auth (login fail/success).
-
-### 6.2. Sử dụng DTO
-
-- Đừng expose entity trực tiếp qua API (nhất là `User`).
-- DTO giúp:
-  - Không leak password, internal fields.
-  - Tự do thay đổi entity mà không break API (versioning).
-
-### 6.3. Validation
-
-- Dùng `@Valid` + `javax.validation`:
-  - Trên DTO: `@NotBlank`, `@Email`, `@Size`, etc.
-  - Kiểm soát lỗi input ở Controller.
-
-### 6.4. Transaction
-
-- Đặt `@Transactional` trên method service cần atomic:
-  - Checkout (tạo bill + bill_info + clear cart).
-- Tránh `@Transactional` trên Controller.
-
----
-
-## 7. Tổng kết
-
-- Schema bạn đang dùng **đã đủ chuẩn và sạch** để:
-  - Học Spring Security + REST API nghiêm túc, không bẫy ngầm.
-  - Mở rộng chức năng mà không phải đập lại nền tảng (id, FK, quan hệ, kiểu dữ liệu đều “chuẩn”).
-- Quy trình tiếp cận chuẩn:
-  1. Chốt schema + Flyway (đã xong).
-  2. Tạo entities + repositories.
-  3. Cấu hình Security (UserDetailsService, PasswordEncoder, SecurityFilterChain).
-  4. Tạo service layer (Auth, User, Fish, Cart, Bill).
-  5. Tạo REST controllers mỏng, dùng DTO, validate input.
-  6. Test luồng: register → login → list fish → add to cart → checkout → xem bill.
-- Mọi quyết định đều ưu tiên:
-  - Đơn giản, rõ, dễ đọc.
-  - An toàn để mở rộng dần, không over-engineer.
-
-Bạn có thể dùng guideline này như “spec backend” để triển khai code dần, và nếu cần, ta có thể viết thêm một guideline tương tự cho phía Vue (cách tổ chức store, axios, route guard, v.v.).
+This is a learning project for educational purposes.

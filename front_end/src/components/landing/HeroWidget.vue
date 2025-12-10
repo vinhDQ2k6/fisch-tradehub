@@ -1,3 +1,11 @@
+<script setup>
+import { useAuth } from "@/auth/useAuth";
+import { computed } from "vue";
+
+const { user } = useAuth();
+const isLogged = computed(() => !!user.value);
+</script>
+
 <template>
     <div
         id="hero"
@@ -50,7 +58,7 @@
             <h1 class="text-9xl font-bold text-gray-900 leading-tight">
                 <span class="font-light block">Welcome to</span>Fisch-TradeHub
             </h1>
-            <div class="flex gap-4 w-fit">
+            <div class="flex gap-4 w-fit" v-if="!isLogged">
                 <Button
                     label="Login"
                     as="router-link"

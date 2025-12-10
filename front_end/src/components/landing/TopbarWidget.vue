@@ -1,4 +1,10 @@
 <script setup>
+import { useAuth } from "@/auth/useAuth";
+import { computed } from "vue";
+
+const { user } = useAuth();
+const isLogged = computed(() => !!user.value);
+
 function smoothScroll(id) {
     document.body.click();
     const element = document.getElementById(id);
@@ -63,6 +69,7 @@ function smoothScroll(id) {
             </li>
         </ul>
         <div
+            v-if="!isLogged"
             class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2"
         >
             <Button

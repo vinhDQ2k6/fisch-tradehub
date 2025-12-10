@@ -15,66 +15,90 @@ import org.springframework.security.web.context.SecurityContextRepository;
 @Configuration
 public class SecurityConfig {
 
-    private final CorsConfig corsConfig;
-    private final UserDetailsService userDetailsService;
+  private final CorsConfig corsConfig;
+  private final UserDetailsService userDetailsService;
+  private final CustomOAuth2UserService customOAuth2UserService;
 
-    SecurityConfig(CorsConfig corsConfig, UserDetailsService userDetailsService) {
-        this.corsConfig = corsConfig;
-        this.userDetailsService = userDetailsService;
-    }
+  SecurityConfig(
+    CorsConfig corsConfig,
+    UserDetailsService userDetailsService,
+    CustomOAuth2UserService customOAuth2UserService
+  ) {
+    this.corsConfig = corsConfig;
+    this.userDetailsService = userDetailsService;
+    this.customOAuth2UserService = customOAuth2UserService;
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                // Tắt CSRF để test API dễ dàng hơn (vì đây là dự án học tập)
-                // Nếu muốn bật lại, cần cấu hình frontend gửi header X-XSRF-TOKEN
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> {
-                    cors.configurationSource(corsConfig.corsConfigurationSource());
-                })
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    throws Exception {
+    http
+      // Tắt CSRF để test API dễ dàng hơn (vì đây là dự án học tập)
+      // Nếu muốn bật lại, cần cấu hình frontend gửi header X-XSRF-TOKEN
+      .csrf(csrf -> csrf.disable())
+      .cors(cors -> {
+        cors.configurationSource(corsConfig.corsConfigurationSource());
+      })
+      .authorizeHttpRequests(auth ->
+        auth
+          // cho phép các request không cần đăng nhập
+          .requestMatchers("/api/auth/**", "/api/payments/**", "/api/fish/**")
+          .permitAll()
+          .requestMatchers("/api/admin/**")
+          .hasRole("ADMIN")
+          .requestMatchers("/api/user/**")
+          .hasAnyRole("USER", "ADMIN")
+          // các request còn lại phải đăng nhập
+          .anyRequest()
+          .authenticated()
+      )
+      .formLogin(form ->
+        form
+          .loginProcessingUrl("/api/auth/login") // where the form is POSTed
+          .usernameParameter("username")
+          .passwordParameter("password")
+          .successHandler((request, response, authentication) -> {
+            response.setStatus(200); // cookies are set; frontend can call /api/auth/me for user data
+          })
+          .failureHandler((request, response, ex) -> {
+            response.setStatus(401);
+          })
+      )
+      .rememberMe(save ->
+        save
+          .key("IamYourAdminYouKnow?")
+          .rememberMeParameter("remember-me")
+          .tokenValiditySeconds(24 * 60 * 60)
+          .userDetailsService(userDetailsService)
+      )
+      .oauth2Login(oauth2 ->
+        oauth2
+          .userInfoEndpoint(userInfo ->
+            userInfo.userService(customOAuth2UserService)
+          )
+          .successHandler((request, response, authentication) -> {
+            response.sendRedirect("http://localhost:5173");
+          })
+      );
 
-                .authorizeHttpRequests(auth -> auth
-                        // cho phép các request không cần đăng nhập
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                        // các request còn lại phải đăng nhập
-                        .anyRequest().authenticated())
+    return http.build();
+  }
 
-                .formLogin(form -> form
-                        .loginProcessingUrl("/api/auth/login") // where the form is POSTed
-                        .usernameParameter("username")
-                        .passwordParameter("password")
-                        .successHandler((request, response, authentication) -> {
-                            response.setStatus(200); // cookies are set; frontend can call /api/auth/me for user data
-                        })
-                        .failureHandler((request, response, ex) -> {
-                            response.setStatus(401);
-                        }))
+  // Nếu cần dùng AuthenticationManager trong AuthController (tự gọi authenticate)
+  @Bean
+  public AuthenticationManager authenticationManager(
+    AuthenticationConfiguration configuration
+  ) throws Exception {
+    return configuration.getAuthenticationManager();
+  }
 
-                .rememberMe(save -> save
-                        .key("IamYourAdminYouKnow?")
-                        .rememberMeParameter("remember-me")
-                        .tokenValiditySeconds(24 * 60 * 60)
-                        .userDetailsService(userDetailsService));
-
-        return http.build();
-    }
-
-    // Nếu cần dùng AuthenticationManager trong AuthController (tự gọi authenticate)
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
-
-    @Bean
-    public SecurityContextRepository securityContextRepository() {
-        return new HttpSessionSecurityContextRepository();
-    }
+  @Bean
+  public SecurityContextRepository securityContextRepository() {
+    return new HttpSessionSecurityContextRepository();
+  }
 }

@@ -8,15 +8,44 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.fisch_tradehub.tradehub_core.exception.BusinessException;
+import com.fisch_tradehub.tradehub_core.exception.DuplicateResourceException;
+import com.fisch_tradehub.tradehub_core.exception.ResourceNotFoundException;
+import com.fisch_tradehub.tradehub_core.exception.UnauthorizedAccessException;
+
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler for REST API endpoints.
+ * Translates exceptions into appropriate HTTP responses.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<String> handleUnauthorizedAccess(UnauthorizedAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<String> handleDuplicateResource(DuplicateResourceException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<String> handleBusinessException(BusinessException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -32,9 +61,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        // In a real app, you might want to define custom exceptions for business logic
-        // to distinguish between 400, 404, 409, etc.
-        // For now, preserving the behavior seen in AuthController for registration errors.
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
